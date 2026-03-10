@@ -1,285 +1,178 @@
 <template>
-    <!--<b>Encours de réflexion. Il est prévu d'afficher la liste de tous les salriés regroupé par service
-        avec la performance de chacun et en bas la performance du service afin<br>
-    de permettre au codir de prendre des décisions pour validation des évaluations</b>-->
     <div>
-        <div class=" flex flex-col">
-            <titre-application big-title="FICHE-DE-NOTE-PONDEREE" small-title="Simulation"
-                               name-page="Performances"></titre-application>
+        <div class="flex flex-col">
+            <titre-application big-title="FICHE-DE-NOTE-PONDEREE" small-title="Simulation" name-page="Performances"/>
             <div class="row">
                 <div class="row">
-                    <div class="offset-6 col-md-3 text-danger ">
-                        <strong style="font-size: 18px">ANNEE PERFORMANCE : {{anneePerformance}}</strong>
+                    <div class="offset-6 col-md-3 text-danger">
+                        <strong style="font-size: 18px">ANNEE PERFORMANCE : {{ anneePerformance }}</strong>
                     </div>
                     <div class="col-md-3 text-danger">
                         <strong style="font-size: 18px">PERFORMANCE ENTRPRISE : {{ performanceUsine }}</strong>
                     </div>
                 </div>
+
                 <div v-show="load" class="mt-4 container">
                     <ul class="nav nav-tabs" id="myTab" role="tablist">
-                        <li class="nav-item">
-                            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#cadres" role="tab"
-                               aria-controls="home" aria-selected="true">Cadres</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="profile-tab" data-toggle="tab" href="#maitrises" role="tab"
-                               aria-controls="profile" aria-selected="false">Maitrises</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="messages-tab" data-toggle="tab" href="#executants" role="tab"
-                               aria-controls="messages" aria-selected="false">Executants</a>
+                        <li class="nav-item" v-for="(tab, index) in tabs" :key="tab.id">
+                            <a
+                                class="nav-link"
+                                :class="{ active: index === 0 }"
+                                :id="`${tab.id}-tab`"
+                                data-toggle="tab"
+                                :href="`#${tab.id}`"
+                                role="tab"
+                                :aria-controls="tab.id"
+                                :aria-selected="index === 0"
+                            >{{ tab.label }}</a>
                         </li>
                     </ul>
 
                     <div class="tab-content">
-                        <div class="tab-pane active" id="cadres" role="tabpanel" aria-labelledby="home-tab">
-                            <table style="border: white 2px solid; font-size: 13px;" class="">
-                                <thead style="background-color: #057e72;color: white" class="uppercase">
-                                <tr>
-                                    <td style="width: 5%; border: 1px solid black;padding: 9px">Matr.</td>
-                                    <td style="width: 18%; border: 1px solid black;padding: 9px">Salarié</td>
-                                    <td style="width: 15%; border: 1px solid black;padding: 9px">Poste</td>
-                                    <td style="width: 10%; border: 1px solid black;padding: 9px">Service</td>
-                                    <td style="width: 5%; border: 1px solid black;padding: 9px">Cat.</td>
-                                    <td style="width: 8%; border: 1px solid black;padding: 9px">Note Obt.</td>
-                                    <td style="width: 8%; border: 1px solid black;padding: 9px">Perfor.</td>
-                                    <td style="width: 8%; border: 1px solid black;padding: 9px">Note Pondérée</td>
-                                    <td style="width: 15%; border: 1px solid black;padding: 9px">Perf.Apr.Pondé.</td>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <template v-for="(item,index) in form.cadres" :key="index">
-                                    <template v-for="(val,cle) in item" :key="cle">
-                                        <tr style="border: black 1px solid" :class="val.beneficiaire?'alert-primary':val.havePrimeExcept?'alert-warning':''" >
-                                            <td style="width: 5%; border: 1px solid black;padding: 8px"><b v-text="val.matricule"></b></td>
-                                            <td style="width: 18%; border: 1px solid black;padding: 8px"><b>{{ val.nom }} {{ val.prenoms }}</b></td>
-                                            <td style="width: 15%; border: 1px solid black;padding: 8px"><b v-text="val.poste"></b></td>
-                                            <td style="width: 10%; border: 1px solid black;padding: 8px"><b v-text="val.service"></b></td>
-                                            <td style="width: 5%; border: 1px solid black;padding: 8px"><b v-text="val.cateprofe"></b></td>
-                                            <td style="width: 8%; border: 1px solid black;padding: 8px"><b v-text="val.performanceRealiser"></b></td>
-                                            <td style="width: 8%; border: 1px solid black;padding: 8px"><b v-text="val.niveauPerf"></b></td>
-                                            <td style="width: 8%; border: 1px solid black;padding: 8px"><b :style="val.notePondere > 0 ? 'color: green':''">{{ val.performanceFinal }}</b>
-                                            </td>
-                                            <td style="width: 15%; border: 1px solid black;padding: 8px">
-                                                <b v-text="val.niveauPerfApresPonde"></b>
-                                               <template v-if="!listeBeneficiaireValider">
-                                                   &nbsp;&nbsp;
-                                                   <button v-if="!val.beneficiaire && !val.havePrimeExcept" @click="defineBeneficiairePrime(val)"
-                                                           type="button" :id="'btnDefinePrimeExcept'+val.id"
-                                                           style="background-color: green; color: white;padding: 2px;"
-                                                           title="choisir pour prime exceptionnelle">
-                                                       <i class="fa fa-plus-circle"></i>
-                                                   </button>
-                                                   <button @click="removeBeneficiairePrime(val)" :id="'btnRemovePrimeExcept'+val.id" type="button" v-if="val.havePrimeExcept"
-                                                           style="background-color: red; color: white;padding: 2px;">
-                                                       <i class="fa fa-minus-circle"></i>
-                                                   </button>
-                                                   <i hidden :id="'loadPrimeExcept'+val.id" class="fa fa-spinner fa-spin fa-2x"></i>
-                                               </template>
-                                            </td>
-                                        </tr>
-                                    </template>
-                                    <tr style="border: 1px solid black">
-                                        <td style="border: 1px solid black;padding: 8px" align="right" colspan="3"><b style="font-size: 17px" class="text-red-600">Effectif evalué</b></td>
-                                        <td style="border: 1px solid black;padding: 8px" align="right"><b class="text-red-600"><b style="font-size: 17px">{{ item.length }}</b></b></td>
-                                        <td style="border: 1px solid black;padding: 8px" align="right"><b style="font-size: 17px" class="text-red-600">Moyenne</b></td>
-                                        <td style="border: 1px solid black;padding: 8px" colspan="5"><b style="font-size: 17px" class="text-danger">{{ index }}</b></td>
+                        <div
+                            v-for="(tab, index) in tabs"
+                            :key="`panel-${tab.id}`"
+                            class="tab-pane"
+                            :class="{ active: index === 0 }"
+                            :id="tab.id"
+                            role="tabpanel"
+                            :aria-labelledby="`${tab.id}-tab`"
+                        >
+                            <div class="filter-zone">
+                                <div class="row mb-2">
+                                    <div class="col-md-4">
+                                        <label class="font-weight-bold mb-1">Recherche globale</label>
+                                        <input v-model="filters[tab.id].global" type="text" class="form-control" placeholder="Rechercher dans toutes les colonnes"/>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3 mb-2" v-for="column in filterableColumns" :key="`${tab.id}-${column.key}`">
+                                        <label class="font-weight-bold mb-1">{{ column.label }}</label>
+                                        <input v-model="filters[tab.id].columns[column.key]" type="text" class="form-control" :placeholder="`Filtrer ${column.label.toLowerCase()}`"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table style="border: white 2px solid; font-size: 13px;" class="w-100">
+                                    <thead style="background-color: #057e72;color: white" class="uppercase">
+                                    <tr>
+                                        <td style="width: 5%; border: 1px solid black;padding: 9px">Matr.</td>
+                                        <td style="width: 18%; border: 1px solid black;padding: 9px">Salarié</td>
+                                        <td style="width: 15%; border: 1px solid black;padding: 9px">Poste</td>
+                                        <td style="width: 10%; border: 1px solid black;padding: 9px">Service</td>
+                                        <td style="width: 5%; border: 1px solid black;padding: 9px">Cat.</td>
+                                        <td style="width: 8%; border: 1px solid black;padding: 9px">Note Obt.</td>
+                                        <td style="width: 8%; border: 1px solid black;padding: 9px">Perfor.</td>
+                                        <td style="width: 8%; border: 1px solid black;padding: 9px">Note Pondérée</td>
+                                        <td style="width: 15%; border: 1px solid black;padding: 9px">Perf.Apr.Pondé.</td>
                                     </tr>
-
-                                </template>
-
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="tab-pane" id="maitrises" role="tabpanel" aria-labelledby="profile-tab">
-                            <table style="border: white 2px solid; font-size: 13px;" class="">
-                                <thead style="background-color: #057e72;color: white" class="uppercase">
-                                <tr>
-                                    <td style="width: 5%; border: 1px solid black;padding: 9px">Matricule</td>
-                                    <td style="width: 18%; border: 1px solid black;padding: 9px">Nom & Prénoms</td>
-                                    <td style="width: 15%; border: 1px solid black;padding: 9px">Poste</td>
-                                    <td style="width: 10%; border: 1px solid black;padding: 9px">Service</td>
-                                    <td style="width: 5%; border: 1px solid black;padding: 9px">Categorie</td>
-                                    <td style="width: 8%; border: 1px solid black;padding: 9px">Note Obt.</td>
-                                    <td style="width: 8%; border: 1px solid black;padding: 9px">Perfor.</td>
-                                    <td style="width: 8%; border: 1px solid black;padding: 9px">Note Pondérée</td>
-                                    <td style="width: 15%; border: 1px solid black;padding: 9px">Perf.Apr.Pondé.</td>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <template v-for="(item,index) in form.maitrises" :key="index">
-                                    <template v-for="(val,cle) in item" :key="cle">
-                                        <tr style="border: black 1px solid" :class="val.beneficiaire?'alert-primary':val.havePrimeExcept?'alert-warning':''">
-                                            <td style="width: 5%; border: 1px solid black;padding: 9px"><b v-text="val.matricule"></b></td>
-                                            <td style="width: 18%; border: 1px solid black;padding: 9px"><b>{{ val.nom }} {{ val.prenoms }}</b></td>
-                                            <td style="width: 15%; border: 1px solid black;padding: 9px"><b v-text="val.poste"></b></td>
-                                            <td style="width: 10%; border: 1px solid black;padding: 9px"><b v-text="val.service"></b></td>
-                                            <td style="width: 5%; border: 1px solid black;padding: 9px"><b v-text="val.cateprofe"></b></td>
-                                            <td style="width: 8%; border: 1px solid black;padding: 9px"><b v-text="val.performanceRealiser"></b></td>
-                                            <td style="width: 8%; border: 1px solid black;padding: 9px"><b v-text="val.niveauPerf"></b></td>
-                                            <td style="width: 8%; border: 1px solid black;padding: 9px"><b :style="val.notePondere > 0 ? 'color: green':''">{{ val.performanceFinal }}</b></td>
-                                            <td style="width: 15%; border: 1px solid black;padding: 9px">
-                                                <b v-text="val.niveauPerfApresPonde"></b>
-                                                <template v-if="!listeBeneficiaireValider">
-                                                        &nbsp;&nbsp;
-                                                        <button v-if="!val.beneficiaire && !val.havePrimeExcept" @click="defineBeneficiairePrime(val)"
-                                                                type="button" :id="'btnDefinePrimeExcept'+val.id"
-                                                                style="background-color: green; color: white;padding: 2px;"
-                                                                title="choisir pour prime exceptionnelle">
-                                                            <i class="fa fa-plus-circle"></i>
-                                                        </button>
-                                                        <button @click="removeBeneficiairePrime(val)" :id="'btnRemovePrimeExcept'+val.id" type="button" v-if="val.havePrimeExcept"
-                                                                style="background-color: red; color: white;padding: 2px;">
-                                                            <i class="fa fa-minus-circle"></i>
-                                                        </button>
-                                                        <i hidden :id="'loadPrimeExcept'+val.id" class="fa fa-spinner fa-spin fa-2x"></i>
-
-                                                </template>
-                                            </td>
-                                        </tr>
-                                    </template>
-                                    <tr style="border: 1px solid black">
-                                        <td style="border: 1px solid black;padding: 8px" align="right" colspan="3"><b style="font-size: 17px" class="text-red-600">Effectif evalué</b></td>
-                                        <td style="border: 1px solid black;padding: 8px" align="right"><b class="text-red-600"><b style="font-size: 17px">{{ item.length }}</b></b></td>
-                                        <td style="border: 1px solid black;padding: 8px" align="right"><b style="font-size: 17px" class="text-red-600">Moyenne</b></td>
-                                        <td style="border: 1px solid black;padding: 8px" colspan="5"><b style="font-size: 17px" class="text-danger">{{ index }}</b></td>
-                                    </tr>
-
-                                </template>
-
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="tab-pane" id="executants" role="tabpanel" aria-labelledby="messages-tab">
-                            <table style="border: white 2px solid; font-size: 13px;" class="table table-bordered table-striped">
-                                <thead style="background-color: #057e72;color: white" class="uppercase">
-                                <tr>
-                                    <td style="width: 5%; border: 1px solid black;padding: 9px">Matricule</td>
-                                    <td style="width: 18%; border: 1px solid black;padding: 9px">Nom & Prénoms</td>
-                                    <td style="width: 15%; border: 1px solid black;padding: 9px">Poste</td>
-                                    <td style="width: 10%; border: 1px solid black;padding: 9px">Service</td>
-                                    <td style="width: 5%; border: 1px solid black;padding: 9px">Categorie</td>
-                                    <td style="width: 8%; border: 1px solid black;padding: 9px">Note Obt.</td>
-                                    <td style="width: 8%; border: 1px solid black;padding: 9px">Perfor.</td>
-                                    <td style="width: 8%; border: 1px solid black;padding: 9px">Note Pondérée</td>
-                                    <td style="width: 15%; border: 1px solid black;padding: 9px">Perf.Apr.Pondé.</td>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <template v-for="(item,index) in form.executants" :key="index">
-                                    <template v-for="(val,cle) in item" :key="cle">
-                                        <tr style="border: black 1px solid" :class="val.beneficiaire?'alert-primary':val.havePrimeExcept?'alert-warning':''">
-                                            <td style="width: 5%; border: 1px solid black;padding: 9px"><b v-text="val.matricule"></b></td>
-                                            <td style="width: 18%; border: 1px solid black;padding: 9px"><b>{{ val.nom }} {{ val.prenoms }}</b></td>
-                                            <td style="width: 15%; border: 1px solid black;padding: 9px"><b v-text="val.poste"></b></td>
-                                            <td style="width: 10%; border: 1px solid black;padding: 9px"><b v-text="val.service"></b></td>
-                                            <td style="width: 5%; border: 1px solid black;padding: 9px"><b v-text="val.cateprofe"></b></td>
-                                            <td style="width: 8%; border: 1px solid black;padding: 9px"><b v-text="val.performanceRealiser"></b></td>
-                                            <td style="width: 8%; border: 1px solid black;padding: 9px"><b v-text="val.niveauPerf"></b></td>
-                                            <td style="width: 8%; border: 1px solid black;padding: 9px"><b :style="val.notePondere > 0 ? 'color: green':''">{{ val.performanceFinal }}</b></td>
-                                            <td style="width: 15%; border: 1px solid black;padding: 9px"><b v-text="val.niveauPerfApresPonde"></b>
+                                    </thead>
+                                    <tbody>
+                                    <tr
+                                        v-for="val in filteredRows[tab.id]"
+                                        :key="`${tab.id}-${val.id}-${val.matricule}`"
+                                        style="border: black 1px solid"
+                                        :class="val.beneficiaire ? 'alert-primary' : val.havePrimeExcept ? 'alert-warning' : ''"
+                                    >
+                                        <td style="width: 5%; border: 1px solid black;padding: 8px"><b>{{ val.matricule }}</b></td>
+                                        <td style="width: 18%; border: 1px solid black;padding: 8px"><b>{{ val.salarie }}</b></td>
+                                        <td style="width: 15%; border: 1px solid black;padding: 8px"><b>{{ val.poste }}</b></td>
+                                        <td style="width: 10%; border: 1px solid black;padding: 8px"><b>{{ val.service }}</b></td>
+                                        <td style="width: 5%; border: 1px solid black;padding: 8px"><b>{{ val.cateprofe }}</b></td>
+                                        <td style="width: 8%; border: 1px solid black;padding: 8px"><b>{{ val.performanceRealiser }}</b></td>
+                                        <td style="width: 8%; border: 1px solid black;padding: 8px"><b>{{ val.niveauPerf }}</b></td>
+                                        <td style="width: 8%; border: 1px solid black;padding: 8px"><b :style="val.notePondere > 0 ? 'color: green' : ''">{{ val.performanceFinal }}</b></td>
+                                        <td style="width: 15%; border: 1px solid black;padding: 8px">
+                                            <b>{{ val.niveauPerfApresPonde }}</b>
+                                            <template v-if="!listeBeneficiaireValider && tab.id !== 'laureats'">
                                                 &nbsp;&nbsp;
-                                               <template v-if="!listeBeneficiaireValider">
-                                                   <button v-if="!val.beneficiaire && !val.havePrimeExcept" @click="defineBeneficiairePrime(val)"
-                                                           type="button" :id="'btnDefinePrimeExcept'+val.id"
-                                                           style="background-color: green; color: white;padding: 2px;"
-                                                           title="choisir pour prime exceptionnelle">
-                                                       <i class="fa fa-plus-circle"></i>
-                                                   </button>
-                                                   <button @click="removeBeneficiairePrime(val)" :id="'btnRemovePrimeExcept'+val.id" type="button" v-if="val.havePrimeExcept"
-                                                           style="background-color: red; color: white;padding: 2px;">
-                                                       <i class="fa fa-minus-circle"></i>
-                                                   </button>
-                                                   <i hidden :id="'loadPrimeExcept'+val.id" class="fa fa-spinner fa-spin fa-2x"></i>
-                                               </template>
-
-                                            </td>
-                                        </tr>
-                                    </template>
-                                    <tr style="border: black 1px solid">
-                                        <td style="border: 1px solid black;padding: 8px" align="right" colspan="3"><b style="font-size: 17px" class="text-red-600">Effectif evalué</b></td>
-                                        <td style="border: 1px solid black;padding: 8px" align="right"><b class="text-red-600"><b style="font-size: 17px">{{ item.length }}</b></b></td>
-                                        <td style="border: 1px solid black;padding: 8px" align="right"><b style="font-size: 17px" class="text-red-600">Moyenne</b></td>
-                                        <td style="border: 1px solid black;padding: 8px" colspan="5"><b style="font-size: 17px" class="text-danger">{{ index }}</b></td>
+                                                <button
+                                                    v-if="!val.beneficiaire && !val.havePrimeExcept"
+                                                    @click="defineBeneficiairePrime(val)"
+                                                    type="button"
+                                                    :id="'btnDefinePrimeExcept' + val.id"
+                                                    style="background-color: green; color: white;padding: 2px;"
+                                                    title="choisir pour prime exceptionnelle"
+                                                >
+                                                    <i class="fa fa-plus-circle"></i>
+                                                </button>
+                                                <button
+                                                    @click="removeBeneficiairePrime(val)"
+                                                    :id="'btnRemovePrimeExcept' + val.id"
+                                                    type="button"
+                                                    v-if="val.havePrimeExcept"
+                                                    style="background-color: red; color: white;padding: 2px;"
+                                                >
+                                                    <i class="fa fa-minus-circle"></i>
+                                                </button>
+                                                <i hidden :id="'loadPrimeExcept' + val.id" class="fa fa-spinner fa-spin fa-2x"></i>
+                                            </template>
+                                        </td>
                                     </tr>
+                                    <tr v-if="!filteredRows[tab.id].length">
+                                        <td colspan="9" class="text-center" style="border: 1px solid black;padding: 12px">
+                                            <b>Aucun employé trouvé avec les filtres saisis.</b>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
 
-                                </template>
-
-                                </tbody>
-                            </table>
+                            <div class="text-right mt-2 mb-3">
+                                <strong>
+                                    Effectif affiché : {{ filteredRows[tab.id].length }} / {{ sourceRows[tab.id].length }}
+                                </strong>
+                            </div>
                         </div>
                     </div>
                 </div>
+
                 <div v-show="!load">
                     <div class="col-md-2 offset-5 mt-4">
-                        <strong style="font-size: 20px;color: #057e72;" class="mb-0">Chargement...</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+                        <strong style="font-size: 20px;color: #057e72;" class="mb-0">Chargement...</strong><br>
                         <i style="color: #057e72;" class="fas fa-spinner fa-spin fa-3x ml-5 mt-2"></i>
                     </div>
                 </div>
-
             </div>
         </div>
-
-        <!--
-                &lt;!&ndash; Modal &ndash;&gt;
-                <div class="modal fade fixed top-0 left-0 hidden w-full h-full outline-none overflow-x-hidden overflow-y-auto"
-                     id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-                     aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered relative w-auto pointer-events-none">
-                        <div
-                            class="modal-content border-none shadow-lg relative flex flex-col w-full pointer-events-auto bg-clip-padding rounded-md outline-none text-current">
-                            <div style="background-color: #acb3c4"
-                                 class="modal-header flex flex-shrink-0 items-center justify-between  border-b border-gray-200 rounded-t-md">
-                                <h5 class="text-red-600 font-medium leading-normal text-gray-800" id="exampleModalLabel">
-                                    <b><i class="fa fa-question-circle"></i> AUJUSTEMENT DE LA PONDERATION</b>
-                                </h5>
-                                &lt;!&ndash;<button type="button" class="btn-close box-content w-4 h-4 p-1 text-black border-none rounded-none opacity-50 focus:shadow-none focus:outline-none focus:opacity-100 hover:text-black hover:opacity-75 hover:no-underline"
-                                        data-bs-dismiss="modal" aria-label="Close"></button>&ndash;&gt;
-                            </div>
-                            <div class="modal-body">
-                                <b><h5>Vous êtes sur le point d'ajuster la note d'évaluation de <b class="pl-1 pr-1" style="background-color: #0a6779;color: white">{{form.currentEval.nom}} {{form.currentEval.prenoms}}</b> </h5></b>
-                               <div>
-                                   <label for=""><b>Valeur à retrancher/ à ajouter</b></label>
-                                   <input type="number" class="form-control">
-                               </div>
-                            </div>
-                            <div class="modal-footer flex items-center justify-end  border-t border-gray-200">
-                                <button id="btn-fermer" class="bg-gray-600 hover:bg-gray-600 text-white font-bold py-2 px-4"
-                                        data-bs-dismiss="modal">FERMER
-                                </button>
-                                <button id="btn-confirm" @click="trashRessource(ressource.id)"
-                                        class="bg-red-600 hover:bg-red-600 text-white font-bold py-2 px-4">VALIDER
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-        -->
-
     </div>
 </template>
 
 <script>
 import TitreApplication from "../block/TitreApplication";
-import useCampagneObjectif from "../../services/campagneObjectif";
-import {onMounted, reactive, ref} from "vue";
+import {computed, onMounted, reactive, ref} from "vue";
 import axios from "axios";
 import useDirection from "../../services/directionServices";
 import appService from "../../services/appService";
-import Swal from "sweetalert2";
 import {useStore} from "vuex";
+
+const createFilterState = () => ({
+    global: '',
+    columns: {
+        matricule: '',
+        salarie: '',
+        poste: '',
+        service: '',
+        cateprofe: '',
+        performanceRealiser: '',
+        niveauPerf: '',
+        performanceFinal: '',
+        niveauPerfApresPonde: ''
+    }
+})
+
+const toSearchValue = (value) => (value === null || value === undefined ? '' : String(value).toLowerCase())
 
 export default {
     name: "simulationPerformance",
     components: {TitreApplication},
     setup() {
-        //const {annees, getAnnes} = useCampagneObjectif();
-        const {getDirections, directions} = useDirection();
+        const {directions} = useDirection();
         const {catchErrors} = appService();
         const succesMessage = ref('')
         const store = useStore();
-        // onMounted(getAnnes);
-        // onMounted(getDirections);
+
         onMounted(() => {
             $(function () {
                 $('#myTab a').on('click', function (e) {
@@ -287,12 +180,31 @@ export default {
                     $(this).tab('show')
                 })
 
-                $('#myTab a[href="#cadres"]').tab('show') // Select tab by name
+                $('#myTab a[href="#cadres"]').tab('show')
             })
-            let baseUrl = store.state.MIX_API_URL;
-            //window.location.href = baseUrl + 'codi/simulation/performance/';
+            store.state.MIX_API_URL;
             getPerformanceGlobale()
         })
+
+        const tabs = [
+            {id: 'cadres', label: 'Cadres'},
+            {id: 'maitrises', label: 'Maitrises'},
+            {id: 'executants', label: 'Executants'},
+            {id: 'laureats', label: 'Lauréats'}
+        ]
+
+        const filterableColumns = [
+            {key: 'matricule', label: 'Matr.'},
+            {key: 'salarie', label: 'Salarié'},
+            {key: 'poste', label: 'Poste'},
+            {key: 'service', label: 'Service'},
+            {key: 'cateprofe', label: 'Catégorie'},
+            {key: 'performanceRealiser', label: 'Note Obt.'},
+            {key: 'niveauPerf', label: 'Perfor.'},
+            {key: 'performanceFinal', label: 'Note Pondérée'},
+            {key: 'niveauPerfApresPonde', label: 'Perf.Apr.Pondé.'}
+        ]
+
         const form = reactive({
             annee: '',
             type: '',
@@ -303,24 +215,83 @@ export default {
             currentEval: '',
             cadres: [],
             maitrises: [],
-            executants: [],
+            executants: []
         })
+
+        const filters = reactive({
+            cadres: createFilterState(),
+            maitrises: createFilterState(),
+            executants: createFilterState(),
+            laureats: createFilterState()
+        })
+
         const load = ref(false)
         const listeBeneficiaireValider = ref(false)
-
         const performanceUsine = ref(0)
         const anneePerformance = ref(0)
 
-        const getPerformanceGlobale = (from='') => {
-            /*form.annee = $('#annee').val();
-            if (form.type === '') {
-                alert('Veuilez sélectionné le type d\'agent');
-                return;
+        const normalizeRows = (liste) => {
+            const rows = []
+            const pushRows = (group) => {
+                if (Array.isArray(group)) {
+                    group.forEach((item) => {
+                        if (item && typeof item === 'object') {
+                            rows.push({
+                                ...item,
+                                salarie: `${item.nom || ''} ${item.prenoms || ''}`.trim()
+                            })
+                        }
+                    })
+                    return
+                }
+                if (group && typeof group === 'object') {
+                    Object.values(group).forEach(pushRows)
+                }
             }
-            if (form.annee === '') {
-                alert('Veuilez sélectionné la campagne');
-                return;
-            }*/
+
+            if (Array.isArray(liste)) {
+                liste.forEach(pushRows)
+            } else {
+                pushRows(liste)
+            }
+
+            return rows
+        }
+
+        const sourceRows = computed(() => {
+            const cadres = normalizeRows(form.cadres)
+            const maitrises = normalizeRows(form.maitrises)
+            const executants = normalizeRows(form.executants)
+            return {
+                cadres,
+                maitrises,
+                executants,
+                laureats: [...cadres, ...maitrises, ...executants].filter((item) => item.beneficiaire)
+            }
+        })
+
+        const applyFilters = (rows, state) => {
+            const globalFilter = toSearchValue(state.global).trim()
+            return rows.filter((row) => {
+                const matchGlobal = !globalFilter || filterableColumns.some(({key}) => toSearchValue(row[key]).includes(globalFilter))
+                if (!matchGlobal) {
+                    return false
+                }
+                return filterableColumns.every(({key}) => {
+                    const columnFilter = toSearchValue(state.columns[key]).trim()
+                    return !columnFilter || toSearchValue(row[key]).includes(columnFilter)
+                })
+            })
+        }
+
+        const filteredRows = computed(() => ({
+            cadres: applyFilters(sourceRows.value.cadres, filters.cadres),
+            maitrises: applyFilters(sourceRows.value.maitrises, filters.maitrises),
+            executants: applyFilters(sourceRows.value.executants, filters.executants),
+            laureats: applyFilters(sourceRows.value.laureats, filters.laureats)
+        }))
+
+        const getPerformanceGlobale = (from = '') => {
             if (from === '') {
                 load.value = false
             }
@@ -331,19 +302,18 @@ export default {
                     form.cadres = response.data.liste.AC
                     form.maitrises = response.data.liste.AM
                     form.executants = response.data.liste.AE
-                    // form.datas = response.data.liste;
-                    //console.log(form)
                     performanceUsine.value = response.data.performanceUsine
-                    anneePerformance.value = response.data.annee;
+                    anneePerformance.value = response.data.annee
                     listeBeneficiaireValider.value = response.data.listeBeneficiaireValider
                 })
         }
+
         const getPerformanceService = () => {
             load.value = false
             axios.get('get/notepondere/service/' + form.service_id)
                 .then((response) => {
                     load.value = true
-                    form.datas = response.data.liste;
+                    form.datas = response.data.liste
                     performanceUsine.value = response.data.performanceUsine
                 })
         }
@@ -351,50 +321,47 @@ export default {
         const getServiceByDirection = () => {
             axios.get('service/direction/' + form.direction_id + '/' + true)
                 .then((response) => {
-                    if (response.data.data.code === 500) {
-
-                    } else {
-                        form.services = response.data.data.services;
-
+                    if (response.data.data.code !== 500) {
+                        form.services = response.data.data.services
                     }
-
                 }).catch((error) => {
-                catchErrors(error, succesMessage);
+                catchErrors(error, succesMessage)
             })
         }
 
         const defineBeneficiairePrime = (item) => {
-            $('#btnDefinePrimeExcept'+item.id).attr('hidden','hidden');
-            $('#loadPrimeExcept'+item.id).removeAttr('hidden');
+            $('#btnDefinePrimeExcept' + item.id).attr('hidden', 'hidden')
+            $('#loadPrimeExcept' + item.id).removeAttr('hidden')
 
             axios.post('definir/beneficiaire/primeexcept', item)
-                .then((response) => {
+                .then(() => {
                     getPerformanceGlobale('defineprime')
-                    $('#loadPrimeExcept'+item.id).attr('hidden','hidden');
+                    $('#loadPrimeExcept' + item.id).attr('hidden', 'hidden')
                 }).catch((error) => {
-                catchErrors(error, succesMessage);
+                catchErrors(error, succesMessage)
             })
         }
 
         const removeBeneficiairePrime = (item) => {
-            $('#btnRemovePrimeExcept'+item.id).attr('hidden','hidden');
-            $('#loadPrimeExcept'+item.id).removeAttr('hidden');
+            $('#btnRemovePrimeExcept' + item.id).attr('hidden', 'hidden')
+            $('#loadPrimeExcept' + item.id).removeAttr('hidden')
 
             axios.post('remove/beneficiaire/primeexcept', item)
-                .then((response) => {
+                .then(() => {
                     getPerformanceGlobale('removeprime')
-                    $('#loadPrimeExcept'+item.id).attr('hidden','hidden');
+                    $('#loadPrimeExcept' + item.id).attr('hidden', 'hidden')
                 }).catch((error) => {
-                catchErrors(error, succesMessage);
+                catchErrors(error, succesMessage)
             })
-        }
-
-        const updatePonderation = (item) => {
-            form.currentEval = item
         }
 
         return {
             directions,
+            tabs,
+            filterableColumns,
+            filters,
+            filteredRows,
+            sourceRows,
             form,
             load,
             performanceUsine,
@@ -403,7 +370,6 @@ export default {
             getPerformanceGlobale,
             getServiceByDirection,
             getPerformanceService,
-            updatePonderation,
             defineBeneficiairePrime,
             removeBeneficiairePrime
         }
@@ -412,5 +378,11 @@ export default {
 </script>
 
 <style scoped>
-
+.filter-zone {
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 12px;
+    margin: 12px 0;
+    background: #f8fafc;
+}
 </style>
