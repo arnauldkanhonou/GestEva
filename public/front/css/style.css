@@ -1,0 +1,185 @@
+body {background: #f4f4f4;}
+/* Nav */
+/*.navbar{min-height: 23px !important;}*/
+/*.navbar-collapse > li > a {padding-top: 3px !important; padding-bottom: 1px!important;}*/
+.navbar-default {background-color: #057e72;border-color: #058069;}
+
+
+/* custop */
+.main-color-bg {background-color: #057e72 !important;border-color: #058069 !important;color: #ffffff !important;}
+.menu-item{margin-bottom: 10px;}
+.btn-green{background-color: #057e72}
+
+/* Head */
+/*#header{background: #556e6e !*#757575*!;!*color: #ffffff;*!padding-bottom: 15px;margin-bottom: 20px; height: 40px}*/
+
+/* breadcrumb */
+
+ /*.breadcrumb{background: #cccccc;color: #333333}*/
+ /*.breadcrumb a{color: #333333}*/
+
+ /* Content */
+
+.dash-box{text-align: center;}
+
+/*Pyrex css*/
+.well,.fontzize13px{
+    font-size: 13px;
+}
+.labelDisplayLine,.inputDisplayLine{
+    display: inline-block;
+    vertical-align: middle;
+}
+.inputDisplayLine{
+    visibility: hidden;
+}
+
+.containerCheckBox {
+  display: block;
+  position: relative;
+  padding-left: 35px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+.top120px{
+  top:120px !important;
+}
+.checkmark,.inputDisplayLine {
+  position: absolute;
+  top: 130%;
+  left: 20%;
+  height: 25px;
+  width: 25px;
+  border-radius: 5px;
+  background-color: #ccc;
+}
+
+/* On mouse-over, add a grey background color */
+.containerCheckBox:hover input ~ .checkmark {
+  background-color: #ccc;
+}
+
+/* When the checkbox is checked, add a blue background */
+.containerCheckBox input:checked ~ .checkmark {
+  background-color: #2196F3;
+}
+
+/* Create the checkmark/indicator (hidden when not checked) */
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+/* Show the checkmark when checked */
+.containerCheckBox input:checked ~ .checkmark:after {
+  display: block;
+}
+
+/* Style the checkmark/indicator */
+.containerCheckBox .checkmark:after {
+  left: 9px;
+  top: 5px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 3px 3px 0;
+  -webkit-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+.margintop23px{
+    margin-top:23px;
+}
+.width50{
+    width:50%;
+}
+.bootstrap-datetimepicker-widget table td.active, .bootstrap-datetimepicker-widget table td.active:hover {
+    background-color: #009688 !important;
+    color: #fff;
+    text-shadow: 0 -1px 0 rgba(0,0,0,0.25);
+}
+  @import url(https://fonts.googleapis.com/css?family=Oswald);
+
+    .loadingContent {
+      background-color: #f9f9f9;
+      font-family: 'Oswald', sans-serif;
+      font-size: 100%;
+      margin: 0;
+      text-align: center;
+    }
+    .loadingContent .wrapper {
+      height: 50px;
+      margin-top: calc(5vh - 25px);
+      margin-left: calc(27vw - 100px);
+      width: 100%;
+    }
+    .loadingContent .wrapperMouvement {
+      height: 50px;
+      margin-top: calc(5vh - 25px);
+      margin-left: calc(10vw - 100px);
+      width: 100%;
+    }
+    .loadingContent .circle {
+      border-radius: 50%;
+      border: 3px #0a0a0a solid;
+      float: left;
+      height: 40px;
+      margin: 0 2px;
+      width: 40px;
+    }
+      .loadingContent .circle-1 {
+        animation: move 1s ease-in-out infinite;
+         border: 3px #059968 solid;
+      }
+      .loadingContent .circle-2 {
+        border: 3px #33CEFF solid;
+      }
+      .loadingContent .circle-3 {
+        border: 3px #F52505 solid;
+      }
+      .loadingContent .circle-1a {
+        animation: fade 1s ease-in-out infinite;
+        border: 3px #9305F5 solid;
+      }
+      @keyframes fade {
+        0% {opacity: 0;}
+        100% {opacity: 1;}
+      }
+      .circle-2 {
+        animation: move 1s ease-in-out infinite;
+      }
+      @keyframes move {
+        0% {transform: translateX(0);}
+        100% {transform: translateX(60px);}
+      }
+      .circle-1a {
+        margin-left: -55px;
+        opacity: 0;
+      }
+      .circle-3 {
+        animation: circle-3 1s ease-in-out infinite;
+        opacity: 1;
+      }
+      @keyframes circle-3 {
+        0% {opacity: 1;}
+        100% {opacity: 0;}
+      }
+
+    .loadingContent h1 {
+      color: #222;
+      font-size: 15px;
+      font-weight: 400;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .displayNone{
+      display: none;
+    }
+    .displayBlock{
+      display:block;
+    }

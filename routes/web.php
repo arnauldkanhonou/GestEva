@@ -1,0 +1,24 @@
+<?php
+
+use App\Http\Controllers\EvaluationController;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
+|
+*/
+
+Route::get('/dashboard', function () {
+    return view('layout.base');
+});
+Route::get('download/liste/beneficiaire',[EvaluationController::class,'downloadListeBeneficiaire']);
+
+
+Route::view('{any}','layout.base')
+    ->where('any','.*');
