@@ -2,10 +2,10 @@ import {createStore} from "vuex";
 const store = createStore({
     state() {
         return {
-            MIX_API_URL_IMAGE:'http://evaluation.scb-lafarge.bj/storage/',
-            //MIX_API_URL_IMAGE:'http://127.0.0.1:8085/storage/',
-            MIX_API_URL:'http://evaluation.scb-lafarge.bj/',
-            // MIX_API_URL:'http://127.0.0.1:8085/',
+            //MIX_API_URL_IMAGE:'http://evaluation.scb-lafarge.bj/storage/',
+            MIX_API_URL_IMAGE:'http://127.0.0.1:8085/storage/',
+            //MIX_API_URL:'http://evaluation.scb-lafarge.bj/',
+             MIX_API_URL:'http://127.0.0.1:8085/',
             MAX_LENGTH:20,
             user:sessionStorage.getItem('user'),
             salarie: sessionStorage.getItem('salarie'),
