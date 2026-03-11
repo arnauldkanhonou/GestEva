@@ -38,17 +38,65 @@
                             role="tabpanel"
                             :aria-labelledby="`${tab.id}-tab`"
                         >
-                            <div class="filter-zone">
-                                <div class="row mb-2">
-                                    <div class="col-md-4">
-                                        <label class="font-weight-bold mb-1">Recherche globale</label>
-                                        <input v-model="filters[tab.id].global" type="text" class="form-control" placeholder="Rechercher dans toutes les colonnes"/>
+                            <div class="d-flex justify-content-end mt-3">
+                                <button class="btn btn-outline-secondary btn-sm" type="button" @click="showFilters = !showFilters">
+                                    {{ showFilters ? 'Masquer les filtres' : 'Afficher les filtres' }}
+                                </button>
+                            </div>
+
+                            <div v-show="showFilters" class="filter-zone">
+                                <div class="row align-items-end">
+                                    <div class="col-md-5 mb-2">
+                                        <label class="font-weight-bold mb-1">Recherche globale (Salarié)</label>
+                                        <input
+                                            v-model="filters[tab.id].global"
+                                            type="text"
+                                            class="form-control"
+                                            placeholder="Rechercher un salarié"
+                                        />
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <label class="font-weight-bold mb-1">Tri par Salarié</label>
+                                        <select v-model="filters[tab.id].salarieSort" class="form-control">
+                                            <option value="">Aucun tri</option>
+                                            <option value="asc">A → Z</option>
+                                            <option value="desc">Z → A</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <label class="font-weight-bold mb-1">Tri par Note pondérée</label>
+                                        <button class="btn btn-outline-primary btn-block" type="button" @click="toggleNoteSort(tab.id)">
+                                            {{ noteSortLabel(tab.id) }}
+                                        </button>
                                     </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col-md-3 mb-2" v-for="column in filterableColumns" :key="`${tab.id}-${column.key}`">
-                                        <label class="font-weight-bold mb-1">{{ column.label }}</label>
-                                        <input v-model="filters[tab.id].columns[column.key]" type="text" class="form-control" :placeholder="`Filtrer ${column.label.toLowerCase()}`"/>
+                                <div class="row align-items-end mt-1">
+                                    <div class="col-md-4 mb-2">
+                                        <label class="font-weight-bold mb-1">Service</label>
+                                        <select v-model="filters[tab.id].service" class="form-control">
+                                            <option value="">Tous</option>
+                                            <option v-for="service in selectOptions[tab.id].services" :key="`${tab.id}-service-${service}`" :value="service">
+                                                {{ service }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <label class="font-weight-bold mb-1">Catégorie</label>
+                                        <select v-model="filters[tab.id].cateprofe" class="form-control">
+                                            <option value="">Toutes</option>
+                                            <option v-for="categorie in selectOptions[tab.id].categories" :key="`${tab.id}-cat-${categorie}`" :value="categorie">
+                                                {{ categorie }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <label class="font-weight-bold mb-1">Poste</label>
+                                        <select v-model="filters[tab.id].poste" class="form-control">
+                                            <option value="">Tous</option>
+                                            <option v-for="poste in selectOptions[tab.id].postes" :key="`${tab.id}-poste-${poste}`" :value="poste">
+                                                {{ poste }}
+                                            </option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
@@ -120,9 +168,7 @@
                             </div>
 
                             <div class="text-right mt-2 mb-3">
-                                <strong>
-                                    Effectif affiché : {{ filteredRows[tab.id].length }} / {{ sourceRows[tab.id].length }}
-                                </strong>
+                                <strong>Effectif affiché : {{ filteredRows[tab.id].length }} / {{ sourceRows[tab.id].length }}</strong>
                             </div>
                         </div>
                     </div>
@@ -145,24 +191,22 @@ import {computed, onMounted, reactive, ref} from "vue";
 import axios from "axios";
 import useDirection from "../../services/directionServices";
 import appService from "../../services/appService";
-import {useStore} from "vuex";
 
 const createFilterState = () => ({
     global: '',
-    columns: {
-        matricule: '',
-        salarie: '',
-        poste: '',
-        service: '',
-        cateprofe: '',
-        performanceRealiser: '',
-        niveauPerf: '',
-        performanceFinal: '',
-        niveauPerfApresPonde: ''
-    }
+    salarieSort: '',
+    noteSort: '',
+    service: '',
+    cateprofe: '',
+    poste: ''
 })
 
 const toSearchValue = (value) => (value === null || value === undefined ? '' : String(value).toLowerCase())
+
+const toNumber = (value) => {
+    const num = Number(value)
+    return Number.isNaN(num) ? 0 : num
+}
 
 export default {
     name: "simulationPerformance",
@@ -171,7 +215,15 @@ export default {
         const {directions} = useDirection();
         const {catchErrors} = appService();
         const succesMessage = ref('')
-        const store = useStore();
+
+        const tabs = [
+            {id: 'cadres', label: 'Cadres'},
+            {id: 'maitrises', label: 'Maitrises'},
+            {id: 'executants', label: 'Executants'},
+            {id: 'laureats', label: 'Lauréats'}
+        ]
+
+        const showFilters = ref(false)
 
         onMounted(() => {
             $(function () {
@@ -182,28 +234,8 @@ export default {
 
                 $('#myTab a[href="#cadres"]').tab('show')
             })
-            store.state.MIX_API_URL;
             getPerformanceGlobale()
         })
-
-        const tabs = [
-            {id: 'cadres', label: 'Cadres'},
-            {id: 'maitrises', label: 'Maitrises'},
-            {id: 'executants', label: 'Executants'},
-            {id: 'laureats', label: 'Lauréats'}
-        ]
-
-        const filterableColumns = [
-            {key: 'matricule', label: 'Matr.'},
-            {key: 'salarie', label: 'Salarié'},
-            {key: 'poste', label: 'Poste'},
-            {key: 'service', label: 'Service'},
-            {key: 'cateprofe', label: 'Catégorie'},
-            {key: 'performanceRealiser', label: 'Note Obt.'},
-            {key: 'niveauPerf', label: 'Perfor.'},
-            {key: 'performanceFinal', label: 'Note Pondérée'},
-            {key: 'niveauPerfApresPonde', label: 'Perf.Apr.Pondé.'}
-        ]
 
         const form = reactive({
             annee: '',
@@ -270,26 +302,87 @@ export default {
             }
         })
 
-        const applyFilters = (rows, state) => {
+        const collectOptions = (rows, key) => {
+            const values = Array.from(new Set(rows.map((item) => (item[key] || '').toString().trim()).filter((value) => value !== '')))
+            return values.sort((a, b) => a.localeCompare(b, 'fr', {sensitivity: 'base'}))
+        }
+
+        const selectOptions = computed(() => ({
+            cadres: {
+                services: collectOptions(sourceRows.value.cadres, 'service'),
+                categories: collectOptions(sourceRows.value.cadres, 'cateprofe'),
+                postes: collectOptions(sourceRows.value.cadres, 'poste')
+            },
+            maitrises: {
+                services: collectOptions(sourceRows.value.maitrises, 'service'),
+                categories: collectOptions(sourceRows.value.maitrises, 'cateprofe'),
+                postes: collectOptions(sourceRows.value.maitrises, 'poste')
+            },
+            executants: {
+                services: collectOptions(sourceRows.value.executants, 'service'),
+                categories: collectOptions(sourceRows.value.executants, 'cateprofe'),
+                postes: collectOptions(sourceRows.value.executants, 'poste')
+            },
+            laureats: {
+                services: collectOptions(sourceRows.value.laureats, 'service'),
+                categories: collectOptions(sourceRows.value.laureats, 'cateprofe'),
+                postes: collectOptions(sourceRows.value.laureats, 'poste')
+            }
+        }))
+
+        const applyFiltersAndSort = (rows, state) => {
             const globalFilter = toSearchValue(state.global).trim()
-            return rows.filter((row) => {
-                const matchGlobal = !globalFilter || filterableColumns.some(({key}) => toSearchValue(row[key]).includes(globalFilter))
-                if (!matchGlobal) {
-                    return false
-                }
-                return filterableColumns.every(({key}) => {
-                    const columnFilter = toSearchValue(state.columns[key]).trim()
-                    return !columnFilter || toSearchValue(row[key]).includes(columnFilter)
-                })
+            const serviceFilter = toSearchValue(state.service).trim()
+            const categorieFilter = toSearchValue(state.cateprofe).trim()
+            const posteFilter = toSearchValue(state.poste).trim()
+
+            const filtered = rows.filter((row) => {
+                const bySalarie = !globalFilter || toSearchValue(row.salarie).includes(globalFilter)
+                const byService = !serviceFilter || toSearchValue(row.service) === serviceFilter
+                const byCategorie = !categorieFilter || toSearchValue(row.cateprofe) === categorieFilter
+                const byPoste = !posteFilter || toSearchValue(row.poste) === posteFilter
+                return bySalarie && byService && byCategorie && byPoste
             })
+
+            if (state.salarieSort === 'asc' || state.salarieSort === 'desc') {
+                const order = state.salarieSort === 'asc' ? 1 : -1
+                filtered.sort((a, b) => toSearchValue(a.salarie).localeCompare(toSearchValue(b.salarie), 'fr', {sensitivity: 'base'}) * order)
+            }
+
+            if (state.noteSort === 'desc' || state.noteSort === 'asc') {
+                const order = state.noteSort === 'desc' ? -1 : 1
+                filtered.sort((a, b) => (toNumber(a.performanceFinal) - toNumber(b.performanceFinal)) * order)
+            }
+
+            return filtered
         }
 
         const filteredRows = computed(() => ({
-            cadres: applyFilters(sourceRows.value.cadres, filters.cadres),
-            maitrises: applyFilters(sourceRows.value.maitrises, filters.maitrises),
-            executants: applyFilters(sourceRows.value.executants, filters.executants),
-            laureats: applyFilters(sourceRows.value.laureats, filters.laureats)
+            cadres: applyFiltersAndSort(sourceRows.value.cadres, filters.cadres),
+            maitrises: applyFiltersAndSort(sourceRows.value.maitrises, filters.maitrises),
+            executants: applyFiltersAndSort(sourceRows.value.executants, filters.executants),
+            laureats: applyFiltersAndSort(sourceRows.value.laureats, filters.laureats)
         }))
+
+        const noteSortLabel = (tabId) => {
+            if (filters[tabId].noteSort === 'desc') {
+                return 'Tri note pondérée : du plus grand au plus petit'
+            }
+            if (filters[tabId].noteSort === 'asc') {
+                return 'Tri note pondérée : du plus petit au plus grand'
+            }
+            return 'Tri note pondérée (1er clic : décroissant)'
+        }
+
+        const toggleNoteSort = (tabId) => {
+            if (filters[tabId].noteSort === '') {
+                filters[tabId].noteSort = 'desc'
+            } else if (filters[tabId].noteSort === 'desc') {
+                filters[tabId].noteSort = 'asc'
+            } else {
+                filters[tabId].noteSort = 'desc'
+            }
+        }
 
         const getPerformanceGlobale = (from = '') => {
             if (from === '') {
@@ -358,15 +451,18 @@ export default {
         return {
             directions,
             tabs,
-            filterableColumns,
+            showFilters,
             filters,
             filteredRows,
             sourceRows,
+            selectOptions,
             form,
             load,
             performanceUsine,
             listeBeneficiaireValider,
             anneePerformance,
+            noteSortLabel,
+            toggleNoteSort,
             getPerformanceGlobale,
             getServiceByDirection,
             getPerformanceService,
