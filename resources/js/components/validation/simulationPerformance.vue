@@ -348,14 +348,14 @@ export default {
                 return bySalarie && byService && byCategorie && byPoste
             })
 
-            if (state.salarieSort === 'asc' || state.salarieSort === 'desc') {
-                const order = state.salarieSort === 'asc' ? 1 : -1
-                filtered.sort((a, b) => toSearchValue(a.salarie).localeCompare(toSearchValue(b.salarie), 'fr', {sensitivity: 'base'}) * order)
-            }
-
             if (state.noteSort === 'desc' || state.noteSort === 'asc') {
                 const order = state.noteSort === 'desc' ? -1 : 1
                 filtered.sort((a, b) => (toNumber(a.performanceFinal) - toNumber(b.performanceFinal)) * order)
+            }
+
+            if (state.salarieSort === 'asc' || state.salarieSort === 'desc') {
+                const order = state.salarieSort === 'asc' ? 1 : -1
+                filtered.sort((a, b) => toSearchValue(a.salarie).localeCompare(toSearchValue(b.salarie), 'fr', {sensitivity: 'base'}) * order)
             }
 
             return filtered
@@ -375,7 +375,7 @@ export default {
             if (filters[tabId].noteSort === 'asc') {
                 return 'Tri note pondérée ↑'
             }
-            return 'Tri note pondérée ↓'
+            return 'Tri note pondérée ↕'
         }
 
         const toggleNoteSort = (tabId) => {
@@ -384,7 +384,7 @@ export default {
             } else if (filters[tabId].noteSort === 'desc') {
                 filters[tabId].noteSort = 'asc'
             } else {
-                filters[tabId].noteSort = 'desc'
+                filters[tabId].noteSort = ''
             }
         }
 
