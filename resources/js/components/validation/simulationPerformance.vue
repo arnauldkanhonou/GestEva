@@ -101,6 +101,10 @@
                                 </div>
                             </div>
 
+                            <div class="text-right mt-2 mb-2">
+                                <strong>Effectif affiché : {{ filteredRows[tab.id].length }} / {{ sourceRows[tab.id].length }}</strong>
+                            </div>
+
                             <div class="table-responsive">
                                 <table style="border: white 2px solid; font-size: 13px;" class="w-100">
                                     <thead style="background-color: #057e72;color: white" class="uppercase">
@@ -366,12 +370,12 @@ export default {
 
         const noteSortLabel = (tabId) => {
             if (filters[tabId].noteSort === 'desc') {
-                return 'Tri note pondérée : du plus grand au plus petit'
+                return 'Tri note pondérée ↓'
             }
             if (filters[tabId].noteSort === 'asc') {
-                return 'Tri note pondérée : du plus petit au plus grand'
+                return 'Tri note pondérée ↑'
             }
-            return 'Tri note pondérée (1er clic : décroissant)'
+            return 'Tri note pondérée ↓'
         }
 
         const toggleNoteSort = (tabId) => {
