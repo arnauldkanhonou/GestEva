@@ -2546,6 +2546,12 @@ class EvaluationController extends Controller
             $tauxResulat = $request->taux;
             $salaireBase = $request->salaireBase;
             $budgetBonus = $request->BudgetBonus;
+            $budgetBonusExceptionnel = ($request->BudgetBonusExceptionnel == null || $request->BudgetBonusExceptionnel == '') ? 0 : $request->BudgetBonusExceptionnel;
+            $budgetAPartager = round($budgetBonus - $budgetBonusExceptionnel,2);
+
+            if ($budgetAPartager < 0) {
+                return response()->json(['message' => 'Le budget bonus exceptionnel ne peut pas être supérieur au budget prévisionnel'],500);
+            }
 
             /*$req =  "select sum(catepro.smc) as totalSB
                     from evaluations eval
@@ -2584,12 +2590,16 @@ class EvaluationController extends Controller
                 $totalSMCPerfB = round((DB::select($reqperfB))[0]->totalsmc,2);
             }
 
+            if ($totalSMCPerfA == 0 || $totalSMCPerfB == 0) {
+                return response()->json(['message' => 'Impossible de calculer les taux sans SMC sur les performances A et B'],500);
+            }
+
             if ($request->tauxPerformanceA !=0 && $request->tauxPerformanceB==0){
                 $tauxPerformanceA = $request->tauxPerformanceA/100;
-                $tauxPerformanceB = ($cagnotteBase - ($totalSMCPerfA*$tauxPerformanceA))/$totalSMCPerfB;
+                $tauxPerformanceB = ($budgetAPartager - ($totalSMCPerfA*$tauxPerformanceA*24))/($totalSMCPerfB*24);
             }else{
                 $tauxPerformanceB = $request->tauxPerformanceB/100;
-                $tauxPerformanceA = ($cagnotteBase - ($totalSMCPerfB*$tauxPerformanceB))/$totalSMCPerfA;
+                $tauxPerformanceA = ($budgetAPartager - ($totalSMCPerfB*$tauxPerformanceB*24))/($totalSMCPerfA*24);
             }
 
             $reqCadre = $this->mouchard->nbreEvaluerParCategorie($idAnnee,$categorieCadre->id,$typeEvaluation->id);
@@ -2648,7 +2658,7 @@ class EvaluationController extends Controller
                 $laureat->sommeSB = $salaireBase;
                 $laureat->budget = $budgetBonus;
                 $laureat->montantTroisPercent = $troispercentSB;
-                $laureat->montantCagnotte = $cagnotteBase;
+                $laureat->montantCagnotte = $budgetAPartager;
                 $laureat->totalSMCperfA = $totalSMCPerfA;
                 $laureat->totalSMCperfB = $totalSMCPerfB;
                 $laureat->save();
@@ -2686,7 +2696,7 @@ class EvaluationController extends Controller
                 $laureat->sommeSB = $salaireBase;
                 $laureat->budget = $budgetBonus;
                 $laureat->montantTroisPercent = $troispercentSB;
-                $laureat->montantCagnotte = $cagnotteBase;
+                $laureat->montantCagnotte = $budgetAPartager;
                 $laureat->totalSMCperfA = $totalSMCPerfA;
                 $laureat->totalSMCperfB = $totalSMCPerfB;
                 $laureat->save();
@@ -2724,13 +2734,30 @@ class EvaluationController extends Controller
                 $laureat->sommeSB = $salaireBase;
                 $laureat->budget = $budgetBonus;
                 $laureat->montantTroisPercent = $troispercentSB;
-                $laureat->montantCagnotte = $cagnotteBase;
+                $laureat->montantCagnotte = $budgetAPartager;
                 $laureat->totalSMCperfA = $totalSMCPerfA;
                 $laureat->totalSMCperfB = $totalSMCPerfB;
                 $laureat->save();
 
                 $beneficiaires[] = $beneficiare;
             }
+
+            $sommeBonusBeneficiaire = round($sommeBonusBeneficiaire,2);
+            $ecartRepartition = round($budgetAPartager - $sommeBonusBeneficiaire,2);
+            if ($ecartRepartition != 0 && count($beneficiaires) > 0) {
+                $lastIndex = count($beneficiaires) - 1;
+                $beneficiaires[$lastIndex]['montantBonus'] = round($beneficiaires[$lastIndex]['montantBonus'] + $ecartRepartition,2);
+                $sommeBonusBeneficiaire = round($sommeBonusBeneficiaire + $ecartRepartition,2);
+
+                $laureatLast = LaureatEvaluation::where('isPrimeExcept',false)
+                    ->where('matricule',$beneficiaires[$lastIndex]['matricule'])
+                    ->where('annee_id',$dataTogetBenificiaire['idAnnee'])->first();
+                if ($laureatLast) {
+                    $laureatLast->montantBonus = $beneficiaires[$lastIndex]['montantBonus'];
+                    $laureatLast->save();
+                }
+            }
+
 
             $listeBeneficiairePrimeExeptionnelles = LaureatEvaluation::where('isPrimeExcept',true)->where('annee_id',$dataTogetBenificiaire['idAnnee'])->get();
 
@@ -2762,6 +2789,7 @@ class EvaluationController extends Controller
                 'totalSMCPerfB'=>$totalSMCPerfB,
                 'tauxPerformanceA'=>round($tauxPerformanceA*100,2),
                 'tauxPerformanceB'=>round($tauxPerformanceB*100,2),
+                'budgetAPartager'=>round($budgetAPartager,2),
                 'beneficiaires'=>$beneficiaires,
                 'sommeBonusBeneficiaire'=>round($sommeBonusBeneficiaire,2),
                 'sommePrimeExcept'=>round($sommePrimeExcept,2),
