@@ -86,7 +86,8 @@ class MouchardApp
         $req =  "select top($nbre) concat(empl.nom,' ',empl.prenoms) as salarie, eval.id idEval, eval.performanceRealiser,eval.performanceFinal,
                 empl.matricule, catepro.code as categorie,fonct.libelle as poste,serv.libelle as service, 'true' as isBonus,
                 (select libelle from niveau_performances where eval.performanceRealiser between borneInf and borneSup) as niveauPerformance,
-                (select libelle from niveau_performances where eval.performanceFinal between borneInf and borneSup) as niveauPerformanceApresPonderation
+                (select libelle from niveau_performances where eval.performanceFinal between borneInf and borneSup) as niveauPerformanceApresPonderation,
+                CAST(catepro.smc as int) as smc
                 from evaluations eval
                 inner join type_evaluations typeEva on eval.type_evaluation_id=typeEva.id
                 inner join employes empl on eval.employe_id = empl.id

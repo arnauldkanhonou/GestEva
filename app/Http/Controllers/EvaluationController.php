@@ -2572,7 +2572,7 @@ class EvaluationController extends Controller
 
             $totalSMCPerfA = 0;
             $totalSMCPerfB = 0;
-            $reqperfA = "select sum(catepro.smc) as totalsmc
+            /*$reqperfA = "select sum(catepro.smc) as totalsmc
                     from evaluations eval
                     inner join employes empl on eval.employe_id=empl.id
                     inner join categorie_professionnelles catepro on empl.categorie_professionnelle_id=catepro.id
@@ -2592,15 +2592,9 @@ class EvaluationController extends Controller
 
             if ($totalSMCPerfA == 0 || $totalSMCPerfB == 0) {
                 return response()->json(['message' => 'Impossible de calculer les taux sans SMC sur les performances A et B'],500);
-            }
+            }*/
 
-            if ($request->tauxPerformanceA !=0 && $request->tauxPerformanceB==0){
-                $tauxPerformanceA = $request->tauxPerformanceA/100;
-                $tauxPerformanceB = ($budgetAPartager - ($totalSMCPerfA*$tauxPerformanceA*24))/($totalSMCPerfB*24);
-            }else{
-                $tauxPerformanceB = $request->tauxPerformanceB/100;
-                $tauxPerformanceA = ($budgetAPartager - ($totalSMCPerfB*$tauxPerformanceB*24))/($totalSMCPerfA*24);
-            }
+
 
             $reqCadre = $this->mouchard->nbreEvaluerParCategorie($idAnnee,$categorieCadre->id,$typeEvaluation->id);
             $reqMaitrise = $this->mouchard->nbreEvaluerParCategorie($idAnnee,$categorieMaitrise->id,$typeEvaluation->id);
@@ -2626,8 +2620,25 @@ class EvaluationController extends Controller
 
             $beneficiaires = [];
             $sommeBonusBeneficiaire = 0;
+            $listeFinals = collect($listeCadresBeneficiares)
+                ->merge($listeMaitrisesBeneficiares)
+                ->merge($listeExecutantsBeneficiares)
+                ->sortBy('niveauPerformance');
 
-            foreach ($listeCadresBeneficiares as $beneficiare){
+            $totalSMCPerfA = $listeFinals->where('niveauPerformanceApresPonderation','A')
+                ->sum('smc');
+            $totalSMCPerfB = $listeFinals->where('niveauPerformanceApresPonderation','B')
+                ->sum('smc');
+
+            if ($request->tauxPerformanceA !=0 && $request->tauxPerformanceB==0){
+                $tauxPerformanceA = $request->tauxPerformanceA/100;
+                $tauxPerformanceB = ($cagnotteBase - ($totalSMCPerfA*$tauxPerformanceA))/$totalSMCPerfB;
+            }else{
+                $tauxPerformanceB = $request->tauxPerformanceB/100;
+                //dd($request->all());
+                $tauxPerformanceA = ($cagnotteBase - ($totalSMCPerfB*$tauxPerformanceB))/$totalSMCPerfA;
+            }
+            foreach ($listeFinals as $beneficiare){
                 if ($beneficiare['niveauPerformanceApresPonderation'] = 'A'){
                     $tauxApplicable = $tauxPerformanceA;
                 }else{
@@ -2666,81 +2677,7 @@ class EvaluationController extends Controller
                 $beneficiaires[] = $beneficiare;
             }
 
-            foreach ($listeMaitrisesBeneficiares as $beneficiare){
-                if ($beneficiare['niveauPerformanceApresPonderation'] = 'A'){
-                    $tauxApplicable = $tauxPerformanceA;
-                }else{
-                    $tauxApplicable = $tauxPerformanceB;
-                }
-                $smc = (CategorieProfessionnelle::where('code',$beneficiare['categorie'])->first())->smc;
-                $beneficiare['smc'] = round($smc,2);
-                $beneficiare['performanceRealiser'] = round($beneficiare['performanceRealiser'],2);
-                $beneficiare['performanceFinal'] = round($beneficiare['performanceFinal'],2);
-                $beneficiare['tauxAppliqueSmc'] = $tauxApplicable*$smc;
-                $beneficiare['montantBonus'] = $beneficiare['tauxAppliqueSmc']*24;
-                $sommeBonusBeneficiaire += $beneficiare['montantBonus'];
 
-                $laureat = LaureatEvaluation::where('isPrimeExcept',false)
-                    ->where('matricule',$beneficiare['matricule'])
-                    ->where('annee_id',$dataTogetBenificiaire['idAnnee'])->first();
-
-                $laureat->montantAppliquer = $beneficiare['tauxAppliqueSmc'];
-                $laureat->montantBonus = $beneficiare['montantBonus'];
-                $laureat->service = $beneficiare['service'];
-                $laureat->idEval = $beneficiare['idEval'];
-                $laureat->noteObtenue = $beneficiare['performanceRealiser'];
-                $laureat->perfObtenue = $beneficiare['niveauPerformance'];
-                $laureat->tauxPerfA = round($tauxPerformanceA*100,2);
-                $laureat->tauxPerfB = round($tauxPerformanceB*100,2);
-                $laureat->tauxResultat = $tauxResulat;
-                $laureat->sommeSB = $salaireBase;
-                $laureat->budget = $budgetBonus;
-                $laureat->montantTroisPercent = $troispercentSB;
-                $laureat->montantCagnotte = $budgetAPartager;
-                $laureat->totalSMCperfA = $totalSMCPerfA;
-                $laureat->totalSMCperfB = $totalSMCPerfB;
-                $laureat->save();
-
-                $beneficiaires[] = $beneficiare;
-            }
-
-            foreach ($listeExecutantsBeneficiares as $beneficiare){
-                if ($beneficiare['niveauPerformanceApresPonderation'] = 'A'){
-                    $tauxApplicable = $tauxPerformanceA;
-                }else{
-                    $tauxApplicable = $tauxPerformanceB;
-                }
-                $smc = (CategorieProfessionnelle::where('code',$beneficiare['categorie'])->first())->smc;
-                $beneficiare['smc'] = round($smc,2);
-                $beneficiare['performanceRealiser'] = round($beneficiare['performanceRealiser'],2);
-                $beneficiare['performanceFinal'] = round($beneficiare['performanceFinal'],2);
-                $beneficiare['tauxAppliqueSmc'] = $tauxApplicable*$smc;
-                $beneficiare['montantBonus'] = $beneficiare['tauxAppliqueSmc']*24;
-                $sommeBonusBeneficiaire += $beneficiare['montantBonus'];
-
-                $laureat = LaureatEvaluation::where('isPrimeExcept',false)
-                    ->where('matricule',$beneficiare['matricule'])
-                    ->where('annee_id',$dataTogetBenificiaire['idAnnee'])->first();
-
-                $laureat->montantAppliquer = $beneficiare['tauxAppliqueSmc'];
-                $laureat->montantBonus = $beneficiare['montantBonus'];
-                $laureat->service = $beneficiare['service'];
-                $laureat->idEval = $beneficiare['idEval'];
-                $laureat->noteObtenue = $beneficiare['performanceRealiser'];
-                $laureat->perfObtenue = $beneficiare['niveauPerformance'];
-                $laureat->tauxPerfA = round($tauxPerformanceA*100,2);
-                $laureat->tauxPerfB = round($tauxPerformanceB*100,2);
-                $laureat->tauxResultat = $tauxResulat;
-                $laureat->sommeSB = $salaireBase;
-                $laureat->budget = $budgetBonus;
-                $laureat->montantTroisPercent = $troispercentSB;
-                $laureat->montantCagnotte = $budgetAPartager;
-                $laureat->totalSMCperfA = $totalSMCPerfA;
-                $laureat->totalSMCperfB = $totalSMCPerfB;
-                $laureat->save();
-
-                $beneficiaires[] = $beneficiare;
-            }
 
             $sommeBonusBeneficiaire = round($sommeBonusBeneficiaire,2);
             $ecartRepartition = round($budgetAPartager - $sommeBonusBeneficiaire,2);
