@@ -448,6 +448,15 @@
                                 <br>
                             </div>
 
+                            <div style="border: black solid 1px;margin-top: 20px; border-radius: 40px;padding: 8px">
+                                <p align="center"><b>commentaire de l'évaluateur</b></p>
+                                <p style="margin-right: 15px;">
+                                    {{form1.evaluation.commentaireResp}}
+                                    <br>
+                                </p>
+                                <br>
+                            </div>
+
                         </div>
                     </div>
                     <div class="modal-footer flex items-center justify-end  border-t border-gray-200">
