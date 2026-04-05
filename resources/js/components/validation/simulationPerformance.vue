@@ -405,22 +405,40 @@ export default {
                 .replace(/'/g, '&#039;')
         }
 
+        const formatExcelValue = (value) => {
+            if (value === null || value === undefined) {
+                return ''
+            }
+
+            if (typeof value === 'number') {
+                return String(value).replace('.', ',')
+            }
+
+            const asString = String(value)
+            if (/^-?\d+\.\d+$/.test(asString)) {
+                return asString.replace('.', ',')
+            }
+
+            return asString
+        }
+
         const buildExcelTable = (rows) => {
-            const headers = ['Matr.', 'Salarié', 'Poste', 'Service', 'Cat.', 'Note Obt.', 'Perfor.', 'Note Pondérée', 'Perf.Apr.Pondé.']
+            const headers = ['Matr.', 'Salarié', 'Poste', 'Service', 'Cat.', 'Note Obt.', 'Perfor.', 'Note Pondérée', 'Perf.Apr.Pondé.', 'Lauréat']
             const tableHead = `
                 <tr>${headers.map((header) => `<th>${escapeHtml(header)}</th>`).join('')}</tr>
             `
             const tableBody = rows.map((row) => `
                 <tr>
-                    <td>${escapeHtml(row.matricule)}</td>
-                    <td>${escapeHtml(row.salarie)}</td>
-                    <td>${escapeHtml(row.poste)}</td>
-                    <td>${escapeHtml(row.service)}</td>
-                    <td>${escapeHtml(row.cateprofe)}</td>
-                    <td>${escapeHtml(row.performanceRealiser)}</td>
-                    <td>${escapeHtml(row.niveauPerf)}</td>
-                    <td>${escapeHtml(row.performanceFinal)}</td>
-                    <td>${escapeHtml(row.niveauPerfApresPonde)}</td>
+                    <td>${escapeHtml(formatExcelValue(row.matricule))}</td>
+                    <td>${escapeHtml(formatExcelValue(row.salarie))}</td>
+                    <td>${escapeHtml(formatExcelValue(row.poste))}</td>
+                    <td>${escapeHtml(formatExcelValue(row.service))}</td>
+                    <td>${escapeHtml(formatExcelValue(row.cateprofe))}</td>
+                    <td>${escapeHtml(formatExcelValue(row.performanceRealiser))}</td>
+                    <td>${escapeHtml(formatExcelValue(row.niveauPerf))}</td>
+                    <td>${escapeHtml(formatExcelValue(row.performanceFinal))}</td>
+                    <td>${escapeHtml(formatExcelValue(row.niveauPerfApresPonde))}</td>
+                    <td style="text-align: center;">${row.beneficiaire ? '✓' : ''}</td>
                 </tr>
             `).join('')
 
