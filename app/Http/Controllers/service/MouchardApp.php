@@ -6,6 +6,7 @@ namespace App\Http\Controllers\service;
 
 use App\Models\CampagnePerformance;
 use App\Models\CategorieEmploye;
+use App\Models\LaureatEvaluation;
 use App\Models\Log;
 use App\Models\NiveauPerformance;
 use App\Models\Service;
@@ -83,7 +84,7 @@ class MouchardApp
 
     public function listeBeneficiaires($nbre,$idAnnee,$idCategorie,$idTypeEva,$niveauPerfA,$niveauPerfB)
     {
-        $req =  "select top($nbre) concat(empl.nom,' ',empl.prenoms) as salarie, eval.id idEval, eval.performanceRealiser,eval.performanceFinal,
+        $req =  "select concat(empl.nom,' ',empl.prenoms) as salarie, eval.id idEval, eval.performanceRealiser,eval.performanceFinal,
                 empl.matricule, catepro.code as categorie,fonct.libelle as poste,serv.libelle as service, 'true' as isBonus,
                 (select libelle from niveau_performances where eval.performanceRealiser between borneInf and borneSup) as niveauPerformance,
                 (select libelle from niveau_performances where eval.performanceFinal between borneInf and borneSup) as niveauPerformanceApresPonderation
@@ -102,10 +103,35 @@ class MouchardApp
                 and val.niveau1 = 1 and val.niveau2 = 1 and val.niveau3 = 1
                 and val.niveau4= 1 and eval.clotureResp= 1
                 and ((eval.performanceFinal between $niveauPerfA->borneInf and $niveauPerfA->borneSup) or (eval.performanceFinal between $niveauPerfB->borneInf and $niveauPerfB->borneSup))
-                order by eval.performanceFinal desc";"
-               /* and eval.clotureCodi='true'*/";
+                order by eval.performanceFinal desc";
 
-        return DB::select($req);
+        $listeClassee = json_decode(json_encode(DB::select($req)), true);
+        if ($nbre <= 0 || count($listeClassee) === 0) {
+            return [];
+        }
+
+        $matriculesConfirmes = LaureatEvaluation::where('annee_id', $idAnnee)
+            ->where('isExAequo', true)
+            ->pluck('matricule')
+            ->toArray();
+        $indexLimite = min($nbre, count($listeClassee));
+        $matriculesInclus = [];
+        $beneficiaires = [];
+
+        foreach ($listeClassee as $index => $salarie) {
+            if ($index < $indexLimite) {
+                $beneficiaires[] = $salarie;
+                $matriculesInclus[] = $salarie['matricule'];
+                continue;
+            }
+
+            if (in_array($salarie['matricule'], $matriculesConfirmes) && !in_array($salarie['matricule'], $matriculesInclus)) {
+                $beneficiaires[] = $salarie;
+                $matriculesInclus[] = $salarie['matricule'];
+            }
+        }
+
+        return $beneficiaires;
     }
 
     public function dataTogetBenificiaire()
