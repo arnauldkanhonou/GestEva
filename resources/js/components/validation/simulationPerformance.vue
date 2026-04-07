@@ -39,6 +39,14 @@
                             :aria-labelledby="`${tab.id}-tab`"
                         >
                             <div class="d-flex justify-content-end mt-3">
+                                <button
+                                    class="btn btn-success btn-sm mr-2"
+                                    type="button"
+                                    @click="exportTabToExcel(tab.id, tab.label)"
+                                >
+                                    <i class="fa fa-file-excel-o"></i>
+                                    Exporter Excel
+                                </button>
                                 <button class="btn btn-outline-secondary btn-sm" type="button" @click="showFilters = !showFilters">
                                     {{ showFilters ? 'Masquer les filtres' : 'Afficher les filtres' }}
                                 </button>
@@ -388,6 +396,80 @@ export default {
             }
         }
 
+        const escapeHtml = (value) => {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;')
+        }
+
+        const formatExcelValue = (value) => {
+            if (value === null || value === undefined) {
+                return ''
+            }
+
+            if (typeof value === 'number') {
+                return String(value).replace('.', ',')
+            }
+
+            const asString = String(value)
+            if (/^-?\d+\.\d+$/.test(asString)) {
+                return asString.replace('.', ',')
+            }
+
+            return asString
+        }
+
+        const buildExcelTable = (rows) => {
+            const headers = ['Matr.', 'Salarié', 'Poste', 'Service', 'Cat.', 'Note Obt.', 'Perfor.', 'Note Pondérée', 'Perf.Apr.Pondé.', 'Lauréat']
+            const tableHead = `
+                <tr>${headers.map((header) => `<th>${escapeHtml(header)}</th>`).join('')}</tr>
+            `
+            const tableBody = rows.map((row) => `
+                <tr>
+                    <td>${escapeHtml(formatExcelValue(row.matricule))}</td>
+                    <td>${escapeHtml(formatExcelValue(row.salarie))}</td>
+                    <td>${escapeHtml(formatExcelValue(row.poste))}</td>
+                    <td>${escapeHtml(formatExcelValue(row.service))}</td>
+                    <td>${escapeHtml(formatExcelValue(row.cateprofe))}</td>
+                    <td>${escapeHtml(formatExcelValue(row.performanceRealiser))}</td>
+                    <td>${escapeHtml(formatExcelValue(row.niveauPerf))}</td>
+                    <td>${escapeHtml(formatExcelValue(row.performanceFinal))}</td>
+                    <td>${escapeHtml(formatExcelValue(row.niveauPerfApresPonde))}</td>
+                    <td style="text-align: center;">${row.beneficiaire ? '✓' : ''}</td>
+                </tr>
+            `).join('')
+
+            return `
+                <table border="1">
+                    <thead>${tableHead}</thead>
+                    <tbody>${tableBody}</tbody>
+                </table>
+            `
+        }
+
+        const exportTabToExcel = (tabId, tabLabel) => {
+            const rows = filteredRows.value[tabId] || []
+            const html = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">
+                    <head><meta charset="UTF-8"></head>
+                    <body>${buildExcelTable(rows)}</body>
+                </html>
+            `
+            const blob = new Blob([html], {type: 'application/vnd.ms-excel;charset=utf-8;'})
+            const url = URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            const date = new Date().toISOString().slice(0, 10)
+            link.href = url
+            link.download = `simulation-performance-${tabLabel.toLowerCase()}-${date}.xls`
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+            URL.revokeObjectURL(url)
+        }
+
         const getPerformanceGlobale = (from = '') => {
             if (from === '') {
                 load.value = false
@@ -467,6 +549,7 @@ export default {
             anneePerformance,
             noteSortLabel,
             toggleNoteSort,
+            exportTabToExcel,
             getPerformanceGlobale,
             getServiceByDirection,
             getPerformanceService,
