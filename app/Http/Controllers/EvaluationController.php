@@ -2823,6 +2823,13 @@ class EvaluationController extends Controller
 
     public function confirmExAequoBeneficiaire(Request $request)
     {
+        if (!$request->has('canConfirmExAequo') || !$request->canConfirmExAequo) {
+            return response()->json([
+                'code' => '422',
+                'message' => 'Ce salarié n\'est pas éligible à la confirmation ex aequo'
+            ], 422);
+        }
+
         $datas = $this->mouchard->dataTogetBenificiaire();
         $categorieProf = CategorieProfessionnelle::where('code', $request->cateprofe)->first();
         $laureat = LaureatEvaluation::where('matricule', $request->matricule)

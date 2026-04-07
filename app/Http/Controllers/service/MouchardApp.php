@@ -117,6 +117,10 @@ class MouchardApp
         $indexLimite = min($nbre, count($listeClassee));
         $matriculesInclus = [];
         $beneficiaires = [];
+        $noteSeuil = null;
+        if ($indexLimite > 0 && isset($listeClassee[$indexLimite - 1])) {
+            $noteSeuil = floatval($listeClassee[$indexLimite - 1]['performanceFinal']);
+        }
 
         foreach ($listeClassee as $index => $salarie) {
             if ($index < $indexLimite) {
@@ -125,7 +129,12 @@ class MouchardApp
                 continue;
             }
 
-            if (in_array($salarie['matricule'], $matriculesConfirmes) && !in_array($salarie['matricule'], $matriculesInclus)) {
+            $isExAequoEligible = $noteSeuil !== null && floatval($salarie['performanceFinal']) === $noteSeuil;
+            if (
+                $isExAequoEligible
+                && in_array($salarie['matricule'], $matriculesConfirmes)
+                && !in_array($salarie['matricule'], $matriculesInclus)
+            ) {
                 $beneficiaires[] = $salarie;
                 $matriculesInclus[] = $salarie['matricule'];
             }
