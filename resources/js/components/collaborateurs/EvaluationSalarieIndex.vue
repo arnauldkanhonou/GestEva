@@ -85,14 +85,16 @@
                                     <td class="px-3 py-2 border-b border-gray-200 bg-white text-md"
                                         >
                                         <template v-if="evaluation.clotureResp">
-                                            <span v-if="isBonusVisible(evaluation.id)" v-text="formatMontantBonus(evaluation.bonusPE)"></span>
-                                            <span v-else>*******</span>
-                                            &nbsp;
-                                            <button type="button"
-                                                    @click="toggleBonusVisibility(evaluation.id)"
-                                                    class="btn-sm bg-gray-600 text-white px-2 py-1 rounded">
-                                                {{ isBonusVisible(evaluation.id) ? 'Masquer' : 'Afficher' }}
-                                            </button>
+                                            <span v-if="isBonusVisible(evaluation.id)"
+                                                  class="text-green-700 font-bold cursor-pointer"
+                                                  @click="toggleBonusVisibility(evaluation.id)"
+                                                  title="Masquer le montant"
+                                                  v-text="formatMontantBonus(evaluation.bonusPE)"></span>
+                                            <span v-else class="text-green-700 font-bold cursor-pointer"
+                                                  @click="toggleBonusVisibility(evaluation.id)"
+                                                  title="Afficher le montant">
+                                                <i class="fa fa-eye"></i>
+                                            </span>
                                         </template>
                                         <template v-else>-</template>
                                     </td>
