@@ -55,16 +55,16 @@
                                     <b>type</b>
                                 </th>
                                 <th class="px-10 py-2 border-b-2 border-gray-200  text-left text-md font-semibold uppercase tracking-wider">
-                                    <b>Accomplissement</b>
+                                    <b>Note</b>
                                 </th>
                                 <th class="px-10 py-2 border-b-2 border-gray-200  text-left text-md font-semibold uppercase tracking-wider">
-                                    <b>Difficultés</b>
+                                    <b>Note pondérée</b>
                                 </th>
                                 <th class="px-10 py-2 border-b-2 border-gray-200  text-left text-md font-semibold uppercase tracking-wider">
-                                    <b>Progrès</b>
+                                    <b>Bonus/PE</b>
                                 </th>
                                 <th class="px-10 py-2 border-b-2 border-gray-200  text-left text-md font-semibold uppercase tracking-wider">
-                                    <b>Valider</b>
+                                    <b>Statut</b>
                                 </th>
                                 <th class="px-5 py-2 border-b-2 border-gray-200  text-left text-md font-semibold uppercase tracking-wider">
                                     <b>Action</b>
@@ -77,20 +77,20 @@
                                     <td class="px-3 py-2 border-b border-gray-200 bg-white text-md"
                                         v-text="evaluation.annee"></td>
                                     <td class="px-3 py-2 border-b border-gray-200 bg-white text-md"
-                                        v-text="evaluation.typeEva"></td>
+                                        v-text="formatTypeEvaluation(evaluation.typeEva)"></td>
                                     <td class="px-3 py-2 border-b border-gray-200 bg-white text-md"
-                                        v-text="evaluation.accomplissement"></td>
+                                        v-text="formatNote(evaluation.note)"></td>
                                     <td class="px-3 py-2 border-b border-gray-200 bg-white text-md"
-                                        v-text="evaluation.difficulteMission"></td>
+                                        v-text="evaluation.clotureResp ? formatNote(evaluation.notePonderee) : '-'"></td>
                                     <td class="px-3 py-2 border-b border-gray-200 bg-white text-md"
-                                        v-text="evaluation.progres"></td>
+                                        v-text="evaluation.clotureResp ? formatNote(evaluation.bonusPE) : '-'"></td>
                                     <td class="px-3 py-2 border-b border-gray-200 bg-white text-md">
                                         <strong class="bg-green-300 text-green-800 px-2" v-if="evaluation.clotureResp">
-                                            Oui</strong>
+                                            Clôturée</strong>
                                         <strong class="bg-red-300 text-red-800 px-2" v-else> En attente</strong>
                                     </td>
                                     <td class="px-3 py-2 border-b border-gray-200 bg-white text-sm">
-                                        <button v-if="typeEva==='EA'" type="button"
+                                        <button v-if="evaluation.typeEva==='EA'" type="button"
                                                 @click="rapportEvaluation(evaluation.id,false)"
                                                 title="Télécharger le rapport"
                                                 class="btn-sm bg-blue-600 text-white px-2 py-1 rounded">
@@ -99,7 +99,7 @@
                                                 class="btn-sm bg-blue-600 text-white px-2 py-1 rounded">
                                             <i class="fa fa-file-pdf"></i></button>
                       -->                  &nbsp;&nbsp;&nbsp;&nbsp;
-                                        <button v-if="typeEva==='EA'" @click="displayCurrentAssesment(evaluation.id,true)" type="button"
+                                        <button v-if="evaluation.typeEva==='EA'" @click="displayCurrentAssesment(evaluation.id,true)" type="button"
                                                 title="Consulter votre auto-evaluation"
                                                 class="btn-sm bg-green-600 text-white px-2 py-1 rounded"
                                                 data-bs-toggle="modal" data-bs-target="#staticBackdrop">
@@ -834,6 +834,26 @@
 
             }
 
+            const formatNote = (value) => {
+                if (value === null || value === undefined || value === '') {
+                    return '-';
+                }
+
+                return parseFloat(value).toFixed(2);
+            }
+
+            const formatTypeEvaluation = (code) => {
+                if (code === 'EA') {
+                    return 'Evaluation annuelle';
+                }
+
+                if (code === 'EMP') {
+                    return 'Evaluation mi-parcours';
+                }
+
+                return code;
+            }
+
             return {
                 form,
                 tabId,
@@ -862,6 +882,8 @@
                 calculPointPerfor,
                 calculPointObjectif,
                 getLibelleCritere,
+                formatNote,
+                formatTypeEvaluation,
             }
         }
     }
