@@ -83,7 +83,19 @@
                                     <td class="px-3 py-2 border-b border-gray-200 bg-white text-md"
                                         v-text="evaluation.clotureResp ? formatNote(evaluation.notePonderee) : '-'"></td>
                                     <td class="px-3 py-2 border-b border-gray-200 bg-white text-md"
-                                        v-text="evaluation.clotureResp ? formatNote(evaluation.bonusPE) : '-'"></td>
+                                        >
+                                        <template v-if="evaluation.clotureResp">
+                                            <span v-if="isBonusVisible(evaluation.id)" v-text="formatNote(evaluation.bonusPE)"></span>
+                                            <span v-else>••••</span>
+                                            &nbsp;
+                                            <button type="button"
+                                                    @click="toggleBonusVisibility(evaluation.id)"
+                                                    class="btn-sm bg-gray-600 text-white px-2 py-1 rounded">
+                                                {{ isBonusVisible(evaluation.id) ? 'Masquer' : 'Afficher' }}
+                                            </button>
+                                        </template>
+                                        <template v-else>-</template>
+                                    </td>
                                     <td class="px-3 py-2 border-b border-gray-200 bg-white text-md">
                                         <strong class="bg-green-300 text-green-800 px-2" v-if="evaluation.clotureResp">
                                             Clôturée</strong>
@@ -703,6 +715,7 @@
             let ressource = reactive({id: ''});
             const tabId = ref([]);
             let annee = ref('');
+            const bonusVisibility = ref({});
             let pointObjec = ref(0);
             let pointPerfor = ref(0);
 
@@ -854,6 +867,14 @@
                 return code;
             }
 
+            const toggleBonusVisibility = (idEvaluation) => {
+                bonusVisibility.value[idEvaluation] = !bonusVisibility.value[idEvaluation];
+            }
+
+            const isBonusVisible = (idEvaluation) => {
+                return bonusVisibility.value[idEvaluation] === true;
+            }
+
             return {
                 form,
                 tabId,
@@ -884,6 +905,8 @@
                 getLibelleCritere,
                 formatNote,
                 formatTypeEvaluation,
+                toggleBonusVisibility,
+                isBonusVisible,
             }
         }
     }

@@ -70,12 +70,17 @@ class EvaluationController extends Controller
             ->join('validations','evaluations.id','=','validations.evaluation_id')
             ->join('annees','annees.id','=','evaluations.annee_id')
             ->join('type_evaluations','type_evaluations.id','=','evaluations.type_evaluation_id')
+            ->leftJoin('laureat_evaluations','laureat_evaluations.idEval','=','evaluations.id')
             ->select('evaluations.id','evaluations.accomplissement','evaluations.difficulteMission','evaluations.progres','evaluations.dateEvaluation','evaluations.clotureCodi','evaluations.clotureResp','validations.niveau1',
                 'validations.niveau2','validations.niveau3','validations.niveau4','annees.libelle as annee',"type_evaluations.code as typeEva",
                 'evaluations.performanceRealiser as note',
                 'evaluations.performanceFinal as notePonderee',
-                DB::raw('(select coalesce(sum(commentaires.bonus),0) from commentaires where commentaires.evaluation_id = evaluations.id) as bonusPE'))
+                DB::raw('coalesce(laureat_evaluations.montantPrime, laureat_evaluations.montantBonus, 0) as bonusPE'))
             ->where('evaluations.employe_id', $employe->id)
+            ->where(function($query){
+                $query->whereNull('laureat_evaluations.id')
+                    ->orWhere('laureat_evaluations.valider', true);
+            })
             ->paginate($nbre);
 
         return $evaluations;
@@ -91,13 +96,18 @@ class EvaluationController extends Controller
             ->join('validations','evaluations.id','=','validations.evaluation_id')
             ->join('annees','annees.id','=','evaluations.annee_id')
             ->join('type_evaluations','type_evaluations.id','=','evaluations.type_evaluation_id')
+            ->leftJoin('laureat_evaluations','laureat_evaluations.idEval','=','evaluations.id')
             ->select('evaluations.id','evaluations.accomplissement','evaluations.difficulteMission','evaluations.progres','evaluations.dateEvaluation','evaluations.clotureCodi','evaluations.clotureResp','validations.niveau1',
                 'validations.niveau2','validations.niveau3','validations.niveau4','annees.libelle as annee',"type_evaluations.code as typeEva",
                 'evaluations.performanceRealiser as note',
                 'evaluations.performanceFinal as notePonderee',
-                DB::raw('(select coalesce(sum(commentaires.bonus),0) from commentaires where commentaires.evaluation_id = evaluations.id) as bonusPE'))
+                DB::raw('coalesce(laureat_evaluations.montantPrime, laureat_evaluations.montantBonus, 0) as bonusPE'))
             ->where('evaluations.employe_id', $employe->id)
             ->where('annees.id',$request->annee)
+            ->where(function($query){
+                $query->whereNull('laureat_evaluations.id')
+                    ->orWhere('laureat_evaluations.valider', true);
+            })
             ->get();
 
         return GlobalResource::make($evaluations);
@@ -116,12 +126,17 @@ class EvaluationController extends Controller
             $evaluations = DB::table('evaluations')
                 ->join('annees','annees.id','=','evaluations.annee_id')
                 ->join('type_evaluations','type_evaluations.id','=','evaluations.type_evaluation_id')
+                ->leftJoin('laureat_evaluations','laureat_evaluations.idEval','=','evaluations.id')
                 ->select('evaluations.id','evaluations.accomplissement','evaluations.difficulteMission','evaluations.progres','evaluations.dateEvaluation','evaluations.clotureCodi','evaluations.clotureResp','annees.libelle as annee',"type_evaluations.code as typeEva",
                     'evaluations.performanceRealiser as note',
                     'evaluations.performanceFinal as notePonderee',
-                    DB::raw('(select coalesce(sum(commentaires.bonus),0) from commentaires where commentaires.evaluation_id = evaluations.id) as bonusPE'))
+                    DB::raw('coalesce(laureat_evaluations.montantPrime, laureat_evaluations.montantBonus, 0) as bonusPE'))
                 ->where('evaluations.employe_id', $employe->id)
                 ->where('type_evaluations.id',$type->id)
+                ->where(function($query){
+                    $query->whereNull('laureat_evaluations.id')
+                        ->orWhere('laureat_evaluations.valider', true);
+                })
                 ->get();
 
 
@@ -137,12 +152,17 @@ class EvaluationController extends Controller
                 $evaluations = DB::table('evaluations')
                     ->join('annees','annees.id','=','evaluations.annee_id')
                     ->join('type_evaluations','type_evaluations.id','=','evaluations.type_evaluation_id')
+                    ->leftJoin('laureat_evaluations','laureat_evaluations.idEval','=','evaluations.id')
                     ->select('evaluations.id','evaluations.accomplissement','evaluations.difficulteMission','evaluations.progres','evaluations.dateEvaluation','evaluations.clotureCodi','evaluations.clotureResp','annees.libelle as annee',"type_evaluations.code as typeEva",
                         'evaluations.performanceRealiser as note',
                         'evaluations.performanceFinal as notePonderee',
-                        DB::raw('(select coalesce(sum(commentaires.bonus),0) from commentaires where commentaires.evaluation_id = evaluations.id) as bonusPE'))
+                        DB::raw('coalesce(laureat_evaluations.montantPrime, laureat_evaluations.montantBonus, 0) as bonusPE'))
                     ->where('evaluations.employe_id', $employe->id)
                     ->where('type_evaluations.id',$type->id)
+                    ->where(function($query){
+                        $query->whereNull('laureat_evaluations.id')
+                            ->orWhere('laureat_evaluations.valider', true);
+                    })
                     //->where('evaluations.transmis','=',1)
                     ->get();
             }
