@@ -85,8 +85,8 @@
                                     <td class="px-3 py-2 border-b border-gray-200 bg-white text-md"
                                         >
                                         <template v-if="evaluation.clotureResp">
-                                            <span v-if="isBonusVisible(evaluation.id)" v-text="formatNote(evaluation.bonusPE)"></span>
-                                            <span v-else>••••</span>
+                                            <span v-if="isBonusVisible(evaluation.id)" v-text="formatMontantBonus(evaluation.bonusPE)"></span>
+                                            <span v-else>*******</span>
                                             &nbsp;
                                             <button type="button"
                                                     @click="toggleBonusVisibility(evaluation.id)"
@@ -867,6 +867,17 @@
                 return code;
             }
 
+            const formatMontantBonus = (value) => {
+                if (value === null || value === undefined || value === '') {
+                    return '-';
+                }
+
+                return new Intl.NumberFormat('fr-FR', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }).format(value);
+            }
+
             const toggleBonusVisibility = (idEvaluation) => {
                 bonusVisibility.value[idEvaluation] = !bonusVisibility.value[idEvaluation];
             }
@@ -905,6 +916,7 @@
                 getLibelleCritere,
                 formatNote,
                 formatTypeEvaluation,
+                formatMontantBonus,
                 toggleBonusVisibility,
                 isBonusVisible,
             }
