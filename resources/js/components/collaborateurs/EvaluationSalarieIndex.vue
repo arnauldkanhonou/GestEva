@@ -48,25 +48,25 @@
                                style="background-color: #acb3c4">
                             <thead>
                             <tr>
-                                <th class="px-10 py-2 border-b-2 border-gray-200  text-left text-md font-semibold uppercase tracking-wider">
+                                <th class="px-10 py-2 border-b-2 border-gray-200 text-center text-md font-semibold uppercase tracking-wider">
                                     <b>Année</b>
                                 </th>
-                                <th class="px-10 py-2 border-b-2 border-gray-200  text-left text-md font-semibold uppercase tracking-wider">
+                                <th class="px-10 py-2 border-b-2 border-gray-200 text-center text-md font-semibold uppercase tracking-wider">
                                     <b>type</b>
                                 </th>
-                                <th class="px-10 py-2 border-b-2 border-gray-200  text-left text-md font-semibold uppercase tracking-wider">
+                                <th class="px-10 py-2 border-b-2 border-gray-200 text-center text-md font-semibold uppercase tracking-wider">
                                     <b>Note</b>
                                 </th>
-                                <th class="px-10 py-2 border-b-2 border-gray-200  text-left text-md font-semibold uppercase tracking-wider">
+                                <th class="px-10 py-2 border-b-2 border-gray-200 text-center text-md font-semibold uppercase tracking-wider">
                                     <b>Note pondérée</b>
                                 </th>
-                                <th class="px-10 py-2 border-b-2 border-gray-200  text-left text-md font-semibold uppercase tracking-wider">
+                                <th class="px-10 py-2 border-b-2 border-gray-200 text-center text-md font-semibold uppercase tracking-wider">
                                     <b>Bonus/PE</b>
                                 </th>
-                                <th class="px-10 py-2 border-b-2 border-gray-200  text-left text-md font-semibold uppercase tracking-wider">
+                                <th class="px-10 py-2 border-b-2 border-gray-200 text-center text-md font-semibold uppercase tracking-wider">
                                     <b>Statut</b>
                                 </th>
-                                <th class="px-5 py-2 border-b-2 border-gray-200  text-left text-md font-semibold uppercase tracking-wider">
+                                <th class="px-5 py-2 border-b-2 border-gray-200 text-center text-md font-semibold uppercase tracking-wider">
                                     <b>Action</b>
                                 </th>
                             </tr>
@@ -74,23 +74,24 @@
                             <tbody>
                             <template v-for="evaluation in evaluationsCollaborateur.data" :key="evaluation.id">
                                 <tr>
-                                    <td class="px-3 py-2 border-b border-gray-200 bg-white text-md"
+                                    <td class="px-3 py-2 border-b border-gray-200 bg-white text-md text-center"
                                         v-text="evaluation.annee"></td>
-                                    <td class="px-3 py-2 border-b border-gray-200 bg-white text-md"
+                                    <td class="px-3 py-2 border-b border-gray-200 bg-white text-md text-center"
                                         v-text="formatTypeEvaluation(evaluation.typeEva)"></td>
-                                    <td class="px-3 py-2 border-b border-gray-200 bg-white text-md"
+                                    <td class="px-3 py-2 border-b border-gray-200 bg-white text-md text-right"
                                         v-text="formatNote(evaluation.note)"></td>
-                                    <td class="px-3 py-2 border-b border-gray-200 bg-white text-md"
+                                    <td class="px-3 py-2 border-b border-gray-200 bg-white text-md text-right"
                                         v-text="evaluation.clotureResp ? formatNote(evaluation.notePonderee) : '-'"></td>
-                                    <td class="px-3 py-2 border-b border-gray-200 bg-white text-md"
+                                    <td class="px-3 py-2 border-b border-gray-200 bg-white text-md text-right"
                                         >
                                         <template v-if="evaluation.clotureResp">
+                                            <span v-if="evaluation.bonusPE === null">-</span>
                                             <span v-if="isBonusVisible(evaluation.id)"
                                                   class="text-green-700 font-bold cursor-pointer"
                                                   @click="toggleBonusVisibility(evaluation.id)"
                                                   title="Masquer le montant"
                                                   v-text="formatMontantBonus(evaluation.bonusPE)"></span>
-                                            <span v-else class="text-green-700 font-bold cursor-pointer"
+                                            <span v-else-if="evaluation.bonusPE !== null" class="text-green-700 font-bold cursor-pointer"
                                                   @click="toggleBonusVisibility(evaluation.id)"
                                                   title="Afficher le montant">
                                                 <i class="fa fa-eye"></i>
@@ -98,12 +99,12 @@
                                         </template>
                                         <template v-else>-</template>
                                     </td>
-                                    <td class="px-3 py-2 border-b border-gray-200 bg-white text-md">
+                                    <td class="px-3 py-2 border-b border-gray-200 bg-white text-md text-center">
                                         <strong class="bg-green-300 text-green-800 px-2" v-if="evaluation.clotureResp">
                                             Clôturée</strong>
                                         <strong class="bg-red-300 text-red-800 px-2" v-else> En attente</strong>
                                     </td>
-                                    <td class="px-3 py-2 border-b border-gray-200 bg-white text-sm">
+                                    <td class="px-3 py-2 border-b border-gray-200 bg-white text-sm text-center">
                                         <button v-if="evaluation.typeEva==='EA'" type="button"
                                                 @click="rapportEvaluation(evaluation.id,false)"
                                                 title="Télécharger le rapport"

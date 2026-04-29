@@ -75,7 +75,7 @@ class EvaluationController extends Controller
                 'validations.niveau2','validations.niveau3','validations.niveau4','annees.libelle as annee',"type_evaluations.code as typeEva",
                 'evaluations.performanceRealiser as note',
                 'evaluations.performanceFinal as notePonderee',
-                DB::raw('coalesce(laureat_evaluations.montantPrime, laureat_evaluations.montantBonus, 0) as bonusPE'))
+                DB::raw('case when laureat_evaluations.id is null then null else coalesce(laureat_evaluations.montantPrime, laureat_evaluations.montantBonus) end as bonusPE'))
             ->where('evaluations.employe_id', $employe->id)
             ->where(function($query){
                 $query->whereNull('laureat_evaluations.id')
@@ -101,7 +101,7 @@ class EvaluationController extends Controller
                 'validations.niveau2','validations.niveau3','validations.niveau4','annees.libelle as annee',"type_evaluations.code as typeEva",
                 'evaluations.performanceRealiser as note',
                 'evaluations.performanceFinal as notePonderee',
-                DB::raw('coalesce(laureat_evaluations.montantPrime, laureat_evaluations.montantBonus, 0) as bonusPE'))
+                DB::raw('case when laureat_evaluations.id is null then null else coalesce(laureat_evaluations.montantPrime, laureat_evaluations.montantBonus) end as bonusPE'))
             ->where('evaluations.employe_id', $employe->id)
             ->where('annees.id',$request->annee)
             ->where(function($query){
@@ -130,7 +130,7 @@ class EvaluationController extends Controller
                 ->select('evaluations.id','evaluations.accomplissement','evaluations.difficulteMission','evaluations.progres','evaluations.dateEvaluation','evaluations.clotureCodi','evaluations.clotureResp','annees.libelle as annee',"type_evaluations.code as typeEva",
                     'evaluations.performanceRealiser as note',
                     'evaluations.performanceFinal as notePonderee',
-                    DB::raw('coalesce(laureat_evaluations.montantPrime, laureat_evaluations.montantBonus, 0) as bonusPE'))
+                    DB::raw('case when laureat_evaluations.id is null then null else coalesce(laureat_evaluations.montantPrime, laureat_evaluations.montantBonus) end as bonusPE'))
                 ->where('evaluations.employe_id', $employe->id)
                 ->where('type_evaluations.id',$type->id)
                 ->where(function($query){
@@ -156,7 +156,7 @@ class EvaluationController extends Controller
                     ->select('evaluations.id','evaluations.accomplissement','evaluations.difficulteMission','evaluations.progres','evaluations.dateEvaluation','evaluations.clotureCodi','evaluations.clotureResp','annees.libelle as annee',"type_evaluations.code as typeEva",
                         'evaluations.performanceRealiser as note',
                         'evaluations.performanceFinal as notePonderee',
-                        DB::raw('coalesce(laureat_evaluations.montantPrime, laureat_evaluations.montantBonus, 0) as bonusPE'))
+                        DB::raw('case when laureat_evaluations.id is null then null else coalesce(laureat_evaluations.montantPrime, laureat_evaluations.montantBonus) end as bonusPE'))
                     ->where('evaluations.employe_id', $employe->id)
                     ->where('type_evaluations.id',$type->id)
                     ->where(function($query){
