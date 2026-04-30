@@ -81,6 +81,7 @@
                                     <td class="px-3 py-2 border-b border-gray-200 bg-white text-md text-right"
                                         v-text="formatNote(evaluation.note)"></td>
                                     <td class="px-3 py-2 border-b border-gray-200 bg-white text-md text-right"
+                                        :class="getNotePondereeClass(evaluation)"
                                         v-text="evaluation.clotureResp ? formatNote(evaluation.notePonderee) : '-'"></td>
                                     <td class="px-3 py-2 border-b border-gray-200 bg-white text-md text-right"
                                         >
@@ -889,6 +890,25 @@
                 return bonusVisibility.value[idEvaluation] === true;
             }
 
+            const getNotePondereeClass = (evaluation) => {
+                if (!evaluation.clotureResp || evaluation.notePonderee === null || evaluation.note === null) {
+                    return 'text-black';
+                }
+
+                const note = parseFloat(evaluation.note);
+                const notePonderee = parseFloat(evaluation.notePonderee);
+
+                if (notePonderee > note) {
+                    return 'text-green-700 font-bold';
+                }
+
+                if (notePonderee < note) {
+                    return 'text-red-700 font-bold';
+                }
+
+                return 'text-black font-bold';
+            }
+
             return {
                 form,
                 tabId,
@@ -922,6 +942,7 @@
                 formatMontantBonus,
                 toggleBonusVisibility,
                 isBonusVisible,
+                getNotePondereeClass,
             }
         }
     }
