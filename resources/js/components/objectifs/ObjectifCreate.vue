@@ -5,7 +5,7 @@
         <div class="container">
             <div class=" offset-1 col-md-10 ">
                 <div class="alert alert-danger" v-if="tabError">
-                    <strong>{{ tabError }}</strong>
+                    <strong style="white-space: pre-line;">{{ tabError }}</strong>
                 </div>
                 <div class="mb-4">
                     <label for="libelle" class="mb-1 block text-base font-medium text-[#07074D]">
@@ -239,8 +239,8 @@
                 if (form.libelle === ''||form.tabAction.length===0||form.tabResults===0||form.echeance==='') {
                     erreur = true;
                     Swal.fire({
-                        title: 'erreur',
-                        text:  'Veuillez saisir votre toutes les informations de votre objectif! Merci',
+                        title: 'Informations incomplètes',
+                        text:  'Veuillez renseigner le libellé, au moins une action clé, au moins un résultat attendu et une échéance.',
                         icon: 'warning',
                     });
                     return 0;
@@ -267,8 +267,8 @@
                     form.action = '';
                 } else{
                     Swal.fire({
-                        title: 'error',
-                        text: 'Cet objectif existe déjà dans la liste. Veuillez saisir autre objectif',
+                        title: 'Objectif en doublon',
+                        text: 'Cet objectif existe déjà dans la liste. Veuillez saisir un autre objectif.',
                         icon: 'error',
                     });
                 }
