@@ -28,18 +28,20 @@
                     <div class="row">
                         <div class="col-md-8">
                             <input :class="Errors.action?'is-invalid':''" @keyup="validateInputAction"
+                                   @keyup.enter.prevent="addActions(form)"
                                    @blur="validateInputAction" v-model="form.action" type="text" name="libelle"
                                    id="actions" placeholder="Définissez les actions clées qui participent à la réalisation de cet objectifs"
                                    class="w-full rounded-md form-control bg-white py-2 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"/>
                         </div>
                         <div class="col-md-1">
-                            <button @click="addActions(form)" class="bg-red-600 py-2 px-4 text-white align-content-center"
+                            <button @click="addActions(form)" :disabled="form.action.trim()===''" class="bg-red-600 py-2 px-4 text-white align-content-center"
                                     type="submit">
                                 <b id="btn-add-action"><i class="fa fa-plus"></i></b>
                             </button>
                         </div>
                     </div>
                     <strong v-if="Errors.action" class="text-red-600">{{Errors.action }}</strong>
+                    <small class="text-muted d-block mt-1">Astuce : appuyez sur Entrée pour ajouter rapidement une action clé.</small>
                     <br>
                     <div class="row">
                         <div v-if="form.tabAction.length>0" class="col-md-9 alert-success">
@@ -63,18 +65,20 @@
                     <div class="row">
                         <div class="col-md-8">
                             <input :class="Errors.resultat?'is-invalid':''" @keyup="validateInputResultat"
+                                   @keyup.enter.prevent="addResultats(form)"
                                    @blur="validateInputResultat" v-model="form.resultat" type="text" name="libelle"
                                    id="resultat" placeholder="saisir le résultat attendu"
                                    class="w-full rounded-md form-control bg-white py-2 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"/>
                         </div>
                         <div class="col-md-1">
-                            <button @click="addResultats(form)" class="bg-red-600 py-2 px-4 text-white align-content-center"
+                            <button @click="addResultats(form)" :disabled="form.resultat.trim()===''" class="bg-red-600 py-2 px-4 text-white align-content-center"
                                     type="submit">
                                 <b id="btn-add-action"><i class="fa fa-plus"></i></b>
                             </button>
                         </div>
                     </div>
                     <strong v-if="Errors.resultat" class="text-red-600">{{Errors.resultat }}</strong>
+                    <small class="text-muted d-block mt-1">Astuce : appuyez sur Entrée pour ajouter rapidement un résultat attendu.</small>
                     <br>
                     <div class="row">
                         <div v-if="form.tabResults.length>0" class="col-md-9 alert-success">
