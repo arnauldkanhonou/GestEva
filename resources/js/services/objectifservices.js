@@ -120,8 +120,9 @@ export default function useObjectifs() {
                 $('#btn-save').html('Enregistrer')
                 let createCustomerErrors = error.response.data.errors;
                 if (error.response.status === 422) {
+                    tabError.value = 'Veuillez corriger les points suivants :';
                     for (const key in createCustomerErrors) {
-                        tabError.value += error.response.data.errors[key][0] + '| ';
+                        tabError.value += '\n• ' + error.response.data.errors[key][0];
                     }
                 }
                 catchErrors(error, succesMessage);
@@ -157,8 +158,9 @@ export default function useObjectifs() {
             .catch(error => {
                 let createCustomerErrors = error.response.data.errors;
                 if (error.response.status === 422) {
+                    tabError.value = 'Veuillez corriger les points suivants :';
                     for (const key in createCustomerErrors) {
-                        tabError.value += error.response.data.errors[key][0] + '| ';
+                        tabError.value += '\n• ' + error.response.data.errors[key][0];
                     }
                 }
                 catchErrors(error, succesMessage);
@@ -228,15 +230,24 @@ export default function useObjectifs() {
     }
 
     const addActions = (form) => {
-        if (form.action === '') {
-            alert('Veuillez saisir les actions clées de l\'objectifs');
+        const action = (form.action || '').trim();
+        if (action === '') {
+            alert('Veuillez saisir au moins une action clé de l’objectif.');
+            return;
+        }
+        if (form.tabAction.includes(action)) {
+            Swal.fire({
+                title: 'Action clé en doublon',
+                text: 'Cette action clé est déjà présente dans la liste.',
+                icon: 'warning',
+            });
             return;
         }
         // if (form.tabAction.length ===0) {
         //     form.actions = form.action
         // }else
         //     form.actions = form.actions + ';' + form.action
-        form.tabAction.push(form.action);
+        form.tabAction.push(action);
         form.action = '';
     }
 
@@ -258,15 +269,24 @@ export default function useObjectifs() {
     }
 
     const addResultats = (form) => {
-        if (form.resultat === '') {
-            alert('Veuillez saisir les resultats de l\'objectifs');
+        const resultat = (form.resultat || '').trim();
+        if (resultat === '') {
+            alert('Veuillez saisir au moins un résultat attendu de l’objectif.');
+            return;
+        }
+        if (form.tabResults.includes(resultat)) {
+            Swal.fire({
+                title: 'Résultat attendu en doublon',
+                text: 'Ce résultat attendu est déjà présent dans la liste.',
+                icon: 'warning',
+            });
             return;
         }
         // if (form.tabResults.length ===0) {
         //     form.resultats = form.resultat
         // }else
         //     form.resultats = form.resultats + ';' + form.resultat
-        form.tabResults.push(form.resultat);
+        form.tabResults.push(resultat);
         form.resultat = '';
     }
 
