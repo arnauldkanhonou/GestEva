@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\service\MouchardApp;
+use App\Http\Requests\StoreObjectifRequest;
 use App\Http\Resources\GlobalResource;
 use App\Models\Annee;
 use App\Models\CampagneObjectif;
@@ -118,7 +119,7 @@ class ObjectifController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return GlobalResource
      */
-    public function store(Request $request)
+    public function store(StoreObjectifRequest $request)
     {
         try {
             if ($request->type == 'formObjectif') {
@@ -168,17 +169,9 @@ class ObjectifController extends Controller
             $datas = $request->tabObjectif;
             $typeForm = $request->type;
 
-            if (count($datas) == 0) {
-                return GlobalResource::make(['code' => 500, 'message' => 'Aucun objectif saisir.']);
-            }
-
-            //$employe = Employe::where('email', $request->user()->email)->first();
             $tabObjctifs = array();
 
             foreach ($datas as $data) {
-                if ($data['libelle'] == '' or $data['libelle'] == null) {
-                    return GlobalResource::make(['code' => 500, 'message' => 'Veuillez ne pas envoyer un objectif sans libellé']);
-                }
                 array_push($tabObjctifs, [
                     'isjson' => true,
                     'annee_id' => $idAnnee,
@@ -193,7 +186,9 @@ class ObjectifController extends Controller
                 ]);
             }
 
-            DB::table('objectifs')->insert($tabObjctifs);
+            DB::transaction(function () use ($tabObjctifs) {
+                DB::table('objectifs')->insert($tabObjctifs);
+            });
 
             return GlobalResource::make(['code' => 200, 'message' => 'Enregistrement effectué avec succès!']);
         }catch (\Exception $exception){
