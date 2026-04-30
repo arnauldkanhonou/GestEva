@@ -48,25 +48,25 @@
                                style="background-color: #acb3c4">
                             <thead>
                             <tr>
-                                <th class="px-10 py-2 border-b-2 border-gray-200  text-left text-md font-semibold uppercase tracking-wider">
+                                <th class="px-10 py-2 border-b-2 border-gray-200 text-center text-md font-semibold uppercase tracking-wider">
                                     <b>Année</b>
                                 </th>
-                                <th class="px-10 py-2 border-b-2 border-gray-200  text-left text-md font-semibold uppercase tracking-wider">
+                                <th class="px-10 py-2 border-b-2 border-gray-200 text-center text-md font-semibold uppercase tracking-wider">
                                     <b>type</b>
                                 </th>
-                                <th class="px-10 py-2 border-b-2 border-gray-200  text-left text-md font-semibold uppercase tracking-wider">
-                                    <b>Accomplissement</b>
+                                <th class="px-10 py-2 border-b-2 border-gray-200 text-center text-md font-semibold uppercase tracking-wider">
+                                    <b>Note</b>
                                 </th>
-                                <th class="px-10 py-2 border-b-2 border-gray-200  text-left text-md font-semibold uppercase tracking-wider">
-                                    <b>Difficultés</b>
+                                <th class="px-10 py-2 border-b-2 border-gray-200 text-center text-md font-semibold uppercase tracking-wider">
+                                    <b>Note pondérée</b>
                                 </th>
-                                <th class="px-10 py-2 border-b-2 border-gray-200  text-left text-md font-semibold uppercase tracking-wider">
-                                    <b>Progrès</b>
+                                <th class="px-10 py-2 border-b-2 border-gray-200 text-center text-md font-semibold uppercase tracking-wider">
+                                    <b>Bonus/PE</b>
                                 </th>
-                                <th class="px-10 py-2 border-b-2 border-gray-200  text-left text-md font-semibold uppercase tracking-wider">
-                                    <b>Valider</b>
+                                <th class="px-10 py-2 border-b-2 border-gray-200 text-center text-md font-semibold uppercase tracking-wider">
+                                    <b>Statut</b>
                                 </th>
-                                <th class="px-5 py-2 border-b-2 border-gray-200  text-left text-md font-semibold uppercase tracking-wider">
+                                <th class="px-5 py-2 border-b-2 border-gray-200 text-center text-md font-semibold uppercase tracking-wider">
                                     <b>Action</b>
                                 </th>
                             </tr>
@@ -74,23 +74,39 @@
                             <tbody>
                             <template v-for="evaluation in evaluationsCollaborateur.data" :key="evaluation.id">
                                 <tr>
-                                    <td class="px-3 py-2 border-b border-gray-200 bg-white text-md"
+                                    <td class="px-3 py-2 border-b border-gray-200 bg-white text-md text-center"
                                         v-text="evaluation.annee"></td>
-                                    <td class="px-3 py-2 border-b border-gray-200 bg-white text-md"
-                                        v-text="evaluation.typeEva"></td>
-                                    <td class="px-3 py-2 border-b border-gray-200 bg-white text-md"
-                                        v-text="evaluation.accomplissement"></td>
-                                    <td class="px-3 py-2 border-b border-gray-200 bg-white text-md"
-                                        v-text="evaluation.difficulteMission"></td>
-                                    <td class="px-3 py-2 border-b border-gray-200 bg-white text-md"
-                                        v-text="evaluation.progres"></td>
-                                    <td class="px-3 py-2 border-b border-gray-200 bg-white text-md">
+                                    <td class="px-3 py-2 border-b border-gray-200 bg-white text-md text-center"
+                                        v-text="formatTypeEvaluation(evaluation.typeEva)"></td>
+                                    <td class="px-3 py-2 border-b border-gray-200 bg-white text-md text-right"
+                                        v-text="formatNote(evaluation.note)"></td>
+                                    <td class="px-3 py-2 border-b border-gray-200 bg-white text-md text-right"
+                                        :class="getNotePondereeClass(evaluation)"
+                                        v-text="evaluation.clotureResp ? formatNote(evaluation.notePonderee) : '-'"></td>
+                                    <td class="px-3 py-2 border-b border-gray-200 bg-white text-md text-right"
+                                        >
+                                        <template v-if="evaluation.clotureResp">
+                                            <span v-if="evaluation.bonusPE === null">-</span>
+                                            <span v-if="isBonusVisible(evaluation.id)"
+                                                  class="text-green-700 font-bold cursor-pointer"
+                                                  @click="toggleBonusVisibility(evaluation.id)"
+                                                  title="Masquer le montant"
+                                                  v-text="formatMontantBonus(evaluation.bonusPE)"></span>
+                                            <span v-else-if="evaluation.bonusPE !== null" class="text-green-700 font-bold cursor-pointer"
+                                                  @click="toggleBonusVisibility(evaluation.id)"
+                                                  title="Afficher le montant">
+                                                <i class="fa fa-eye"></i>
+                                            </span>
+                                        </template>
+                                        <template v-else>-</template>
+                                    </td>
+                                    <td class="px-3 py-2 border-b border-gray-200 bg-white text-md text-center">
                                         <strong class="bg-green-300 text-green-800 px-2" v-if="evaluation.clotureResp">
-                                            Oui</strong>
+                                            Clôturée</strong>
                                         <strong class="bg-red-300 text-red-800 px-2" v-else> En attente</strong>
                                     </td>
-                                    <td class="px-3 py-2 border-b border-gray-200 bg-white text-sm">
-                                        <button v-if="typeEva==='EA'" type="button"
+                                    <td class="px-3 py-2 border-b border-gray-200 bg-white text-sm text-center">
+                                        <button v-if="evaluation.typeEva==='EA'" type="button"
                                                 @click="rapportEvaluation(evaluation.id,false)"
                                                 title="Télécharger le rapport"
                                                 class="btn-sm bg-blue-600 text-white px-2 py-1 rounded">
@@ -99,7 +115,7 @@
                                                 class="btn-sm bg-blue-600 text-white px-2 py-1 rounded">
                                             <i class="fa fa-file-pdf"></i></button>
                       -->                  &nbsp;&nbsp;&nbsp;&nbsp;
-                                        <button v-if="typeEva==='EA'" @click="displayCurrentAssesment(evaluation.id,true)" type="button"
+                                        <button v-if="evaluation.typeEva==='EA'" @click="displayCurrentAssesment(evaluation.id,true)" type="button"
                                                 title="Consulter votre auto-evaluation"
                                                 class="btn-sm bg-green-600 text-white px-2 py-1 rounded"
                                                 data-bs-toggle="modal" data-bs-target="#staticBackdrop">
@@ -703,6 +719,7 @@
             let ressource = reactive({id: ''});
             const tabId = ref([]);
             let annee = ref('');
+            const bonusVisibility = ref({});
             let pointObjec = ref(0);
             let pointPerfor = ref(0);
 
@@ -834,6 +851,64 @@
 
             }
 
+            const formatNote = (value) => {
+                if (value === null || value === undefined || value === '') {
+                    return '-';
+                }
+
+                return parseFloat(value).toFixed(2);
+            }
+
+            const formatTypeEvaluation = (code) => {
+                if (code === 'EA') {
+                    return 'Evaluation annuelle';
+                }
+
+                if (code === 'EMP') {
+                    return 'Evaluation mi-parcours';
+                }
+
+                return code;
+            }
+
+            const formatMontantBonus = (value) => {
+                if (value === null || value === undefined || value === '') {
+                    return '-';
+                }
+
+                return new Intl.NumberFormat('fr-FR', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }).format(value);
+            }
+
+            const toggleBonusVisibility = (idEvaluation) => {
+                bonusVisibility.value[idEvaluation] = !bonusVisibility.value[idEvaluation];
+            }
+
+            const isBonusVisible = (idEvaluation) => {
+                return bonusVisibility.value[idEvaluation] === true;
+            }
+
+            const getNotePondereeClass = (evaluation) => {
+                if (!evaluation.clotureResp || evaluation.notePonderee === null || evaluation.note === null) {
+                    return 'text-black';
+                }
+
+                const note = parseFloat(evaluation.note);
+                const notePonderee = parseFloat(evaluation.notePonderee);
+
+                if (notePonderee > note) {
+                    return 'text-green-700 font-bold';
+                }
+
+                if (notePonderee < note) {
+                    return 'text-red-700 font-bold';
+                }
+
+                return 'text-black font-bold';
+            }
+
             return {
                 form,
                 tabId,
@@ -862,6 +937,12 @@
                 calculPointPerfor,
                 calculPointObjectif,
                 getLibelleCritere,
+                formatNote,
+                formatTypeEvaluation,
+                formatMontantBonus,
+                toggleBonusVisibility,
+                isBonusVisible,
+                getNotePondereeClass,
             }
         }
     }
