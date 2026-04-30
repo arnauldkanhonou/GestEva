@@ -2853,6 +2853,61 @@ class EvaluationController extends Controller
         return response()->json(['code'=>'201','message'=>'Opération réussie'],201);
     }
 
+    public function confirmExAequoBeneficiaire(Request $request)
+    {
+        if (!$request->has('canConfirmExAequo') || !$request->canConfirmExAequo) {
+            return response()->json([
+                'code' => '422',
+                'message' => 'Ce salarié n\'est pas éligible à la confirmation ex aequo'
+            ], 422);
+        }
+
+        $datas = $this->mouchard->dataTogetBenificiaire();
+        $categorieProf = CategorieProfessionnelle::where('code', $request->cateprofe)->first();
+        $laureat = LaureatEvaluation::where('matricule', $request->matricule)
+            ->where('annee_id', $datas['idAnnee'])
+            ->first();
+
+        if ($laureat == null || $laureat == '') {
+            LaureatEvaluation::create([
+                'matricule' => $request->matricule,
+                'salarie' => trim($request->nom . ' ' . $request->prenoms),
+                'poste' => $request->poste,
+                'categorie' => $request->cateprofe,
+                'idEval' => $request->id,
+                'noteObtenue' => $request->performanceRealiser,
+                'service' => $request->service,
+                'smc' => $categorieProf != null ? $categorieProf->smc : 0,
+                'notePonderer' => $request->performanceFinal,
+                'perfObtenue' => $request->niveauPerf,
+                'perfApresPondereration' => $request->niveauPerfApresPonde,
+                'isPrimeExcept' => false,
+                'isExAequo' => true,
+                'annee_id' => $datas['idAnnee']
+            ]);
+        } else {
+            $laureat->isExAequo = true;
+            $laureat->isPrimeExcept = false;
+            $laureat->save();
+        }
+
+        return response()->json(['code' => '201', 'message' => 'Opération réussie'], 201);
+    }
+
+    public function removeConfirmExAequoBeneficiaire(Request $request)
+    {
+        $datas = $this->mouchard->dataTogetBenificiaire();
+        $laureat = LaureatEvaluation::where('matricule', $request->matricule)
+            ->where('annee_id', $datas['idAnnee'])
+            ->first();
+        if ($laureat != null && $laureat != '') {
+            $laureat->isExAequo = false;
+            $laureat->save();
+        }
+
+        return response()->json(['code' => '200', 'message' => 'Opération réussie'], 200);
+    }
+
     public function checkListeValider()
     {
         $data = $this->mouchard->dataTogetBenificiaire();

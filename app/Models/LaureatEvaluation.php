@@ -11,5 +11,5 @@ class LaureatEvaluation extends Model
     protected $dateFormat = 'd-m-Y H:i:s';
 
     protected $guarded = [];
-    protected $casts = ['isPrimeExcept'=>'boolean','valider'=>'boolean'];
+    protected $casts = ['isPrimeExcept'=>'boolean','isExAequo'=>'boolean','valider'=>'boolean'];
 }

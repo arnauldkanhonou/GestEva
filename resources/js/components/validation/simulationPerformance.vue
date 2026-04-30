@@ -133,7 +133,7 @@
                                         v-for="val in filteredRows[tab.id]"
                                         :key="`${tab.id}-${val.id}-${val.matricule}`"
                                         style="border: black 1px solid"
-                                        :class="val.beneficiaire ? 'alert-primary' : val.havePrimeExcept ? 'alert-warning' : ''"
+                                        :class="val.beneficiaire ? 'alert-primary' : ''"
                                     >
                                         <td style="width: 5%; border: 1px solid black;padding: 8px"><b>{{ val.matricule }}</b></td>
                                         <td style="width: 18%; border: 1px solid black;padding: 8px"><b>{{ val.salarie }}</b></td>
@@ -148,25 +148,25 @@
                                             <template v-if="!listeBeneficiaireValider && tab.id !== 'laureats'">
                                                 &nbsp;&nbsp;
                                                 <button
-                                                    v-if="!val.beneficiaire && !val.havePrimeExcept"
-                                                    @click="defineBeneficiairePrime(val)"
+                                                    v-if="val.canConfirmExAequo && !val.beneficiaire"
+                                                    @click="defineBeneficiaireExAequo(val)"
                                                     type="button"
-                                                    :id="'btnDefinePrimeExcept' + val.id"
+                                                    :id="'btnDefineExAequo' + val.id"
                                                     style="background-color: green; color: white;padding: 2px;"
-                                                    title="choisir pour prime exceptionnelle"
+                                                    title="inclure cet ex aequo dans les lauréats"
                                                 >
                                                     <i class="fa fa-plus-circle"></i>
                                                 </button>
                                                 <button
-                                                    @click="removeBeneficiairePrime(val)"
-                                                    :id="'btnRemovePrimeExcept' + val.id"
+                                                    @click="removeBeneficiaireExAequo(val)"
+                                                    :id="'btnRemoveExAequo' + val.id"
                                                     type="button"
-                                                    v-if="val.havePrimeExcept"
+                                                    v-if="val.canConfirmExAequo && val.isExAequoConfirme"
                                                     style="background-color: red; color: white;padding: 2px;"
                                                 >
                                                     <i class="fa fa-minus-circle"></i>
                                                 </button>
-                                                <i hidden :id="'loadPrimeExcept' + val.id" class="fa fa-spinner fa-spin fa-2x"></i>
+                                                <i hidden :id="'loadExAequo' + val.id" class="fa fa-spinner fa-spin fa-2x"></i>
                                             </template>
                                         </td>
                                     </tr>
@@ -508,27 +508,27 @@ export default {
             })
         }
 
-        const defineBeneficiairePrime = (item) => {
-            $('#btnDefinePrimeExcept' + item.id).attr('hidden', 'hidden')
-            $('#loadPrimeExcept' + item.id).removeAttr('hidden')
+        const defineBeneficiaireExAequo = (item) => {
+            $('#btnDefineExAequo' + item.id).attr('hidden', 'hidden')
+            $('#loadExAequo' + item.id).removeAttr('hidden')
 
-            axios.post('definir/beneficiaire/primeexcept', item)
+            axios.post('definir/beneficiaire/exaequo', item)
                 .then(() => {
                     getPerformanceGlobale('defineprime')
-                    $('#loadPrimeExcept' + item.id).attr('hidden', 'hidden')
+                    $('#loadExAequo' + item.id).attr('hidden', 'hidden')
                 }).catch((error) => {
                 catchErrors(error, succesMessage)
             })
         }
 
-        const removeBeneficiairePrime = (item) => {
-            $('#btnRemovePrimeExcept' + item.id).attr('hidden', 'hidden')
-            $('#loadPrimeExcept' + item.id).removeAttr('hidden')
+        const removeBeneficiaireExAequo = (item) => {
+            $('#btnRemoveExAequo' + item.id).attr('hidden', 'hidden')
+            $('#loadExAequo' + item.id).removeAttr('hidden')
 
-            axios.post('remove/beneficiaire/primeexcept', item)
+            axios.post('remove/beneficiaire/exaequo', item)
                 .then(() => {
                     getPerformanceGlobale('removeprime')
-                    $('#loadPrimeExcept' + item.id).attr('hidden', 'hidden')
+                    $('#loadExAequo' + item.id).attr('hidden', 'hidden')
                 }).catch((error) => {
                 catchErrors(error, succesMessage)
             })
@@ -553,8 +553,8 @@ export default {
             getPerformanceGlobale,
             getServiceByDirection,
             getPerformanceService,
-            defineBeneficiairePrime,
-            removeBeneficiairePrime
+            defineBeneficiaireExAequo,
+            removeBeneficiaireExAequo
         }
     }
 }

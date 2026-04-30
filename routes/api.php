@@ -178,6 +178,8 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::get('/cloturer/toute/evaluation',[EvaluationController::class,'cloturerAllEvaluationsByCodi']);
     Route::post('/definir/beneficiaire/primeexcept',[EvaluationController::class,'definedBeneficiarePrimeExceptionnelle']);
     Route::post('/remove/beneficiaire/primeexcept',[EvaluationController::class,'removeBeneficiairePrimeExceptionnelle']);
+    Route::post('/definir/beneficiaire/exaequo',[EvaluationController::class,'confirmExAequoBeneficiaire']);
+    Route::post('/remove/beneficiaire/exaequo',[EvaluationController::class,'removeConfirmExAequoBeneficiaire']);
     Route::post('/set/value/primeexcept/salarie',[EvaluationController::class,'setValeurPrimeExceptionnelle']);
     Route::get('/check/liste/beneficiaire',[EvaluationController::class,'checkListeValider']);
     Route::get('/valider/liste/beneficiaire',[EvaluationController::class,'validerListeBeneficiaire']);
@@ -185,4 +187,3 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::get('verify/entretien/miparcours/{idColab}',[EvaluationController::class,'verifyEntretienMiparcours']);
     Route::get('verify/entretien/annuel/{idColab}',[EvaluationController::class,'verifyEntretienAnnuel']);
 });
-

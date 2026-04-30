@@ -694,8 +694,9 @@ trait CustormRequestSqlTrait
                     if (count(DB::select($sql)) > 0) {
                         $niveauPerf = DB::select($sql)[0]->libelle;
                     }
-                    $tabTempons[$key]['benieficiaire'] = false;
-                    $tabTempons[$key]['havePrimeExcept'] = false;
+                    $tabTempons[$key]['beneficiaire'] = false;
+                    $tabTempons[$key]['canConfirmExAequo'] = false;
+                    $tabTempons[$key]['isExAequoConfirme'] = false;
                     $tabTempons[$key]['niveauPerf'] = $niveauPerf;
                     $tabTempons[$key]['niveauPerfApresPonde'] = $niveauPerf;
 
@@ -748,7 +749,7 @@ trait CustormRequestSqlTrait
         $listeCadresBeneficiares = json_decode(json_encode($this->mouchardApp->listeBeneficiaires($nbrCadreBeneficiaire, $idAnnee, $categorieCadre->id, $typeEvaluation->id, $niveauperfA, $niveauperfB)), true);
         $listeMaitrisesBeneficiares = json_decode(json_encode($this->mouchardApp->listeBeneficiaires($nbrMaitriseBeneficiaire, $idAnnee, $categorieMaitrise->id, $typeEvaluation->id, $niveauperfA, $niveauperfB)), true);
         $listeExecutantsBeneficiares = json_decode(json_encode($this->mouchardApp->listeBeneficiaires($nbrExecutantBeneficiaire, $idAnnee, $categorieExecutant->id, $typeEvaluation->id, $niveauperfA, $niveauperfB)), true);
-        $listeBeneficiairePrimeExeptionnelles = LaureatEvaluation::where('isPrimeExcept', true)->where('annee_id', $idAnnee)->get();
+        $listeExAequoConfirmes = LaureatEvaluation::where('isExAequo', true)->where('annee_id', $idAnnee)->pluck('matricule')->toArray();
 
         DB::beginTransaction();
 
@@ -845,54 +846,35 @@ trait CustormRequestSqlTrait
 
         }
 
-        foreach ($listeBeneficiairePrimeExeptionnelles as $beneficiairePrimeExept) {
-            $category = CategorieProfessionnelle::where('code', $beneficiairePrimeExept['categorie'])->first();
-            if ($category->categorie->code == 'AE') {
-                foreach ($datas['AE'] as $key1 => $values) {
-                    foreach ($values as $key2 => $value) {
-                        if ($beneficiairePrimeExept->matricule == $value['matricule']) {
-                            $datas['AE'][$key1][$key2]['havePrimeExcept'] = true;
-                            break;
-                        }
+        $mapLimites = [
+            'AC' => $nbrCadreBeneficiaire,
+            'AM' => $nbrMaitriseBeneficiaire,
+            'AE' => $nbrExecutantBeneficiaire,
+        ];
 
-                    }
-                    if ($datas['AE'][$key1][$key2]['havePrimeExcept']) {
-                        break;
+        foreach (['AC', 'AM', 'AE'] as $codeCategorie) {
+            if (!isset($datas[$codeCategorie])) {
+                continue;
+            }
+            foreach ($datas[$codeCategorie] as $keyMoyenne => $rowsCategorie) {
+                $indexLimite = $mapLimites[$codeCategorie];
+                $noteSeuil = null;
+                if ($indexLimite > 0 && isset($rowsCategorie[$indexLimite - 1])) {
+                    $noteSeuil = $rowsCategorie[$indexLimite - 1]['performanceFinal'];
+                }
+
+                foreach ($rowsCategorie as $index => $row) {
+                    $isConfirme = in_array($row['matricule'], $listeExAequoConfirmes);
+                    $isExAequoFrontiere = $noteSeuil !== null && $index >= $indexLimite && floatval($row['performanceFinal']) === floatval($noteSeuil);
+
+                    $datas[$codeCategorie][$keyMoyenne][$index]['isExAequoConfirme'] = $isConfirme;
+                    $datas[$codeCategorie][$keyMoyenne][$index]['canConfirmExAequo'] = $isExAequoFrontiere;
+
+                    if ($isConfirme) {
+                        $datas[$codeCategorie][$keyMoyenne][$index]['beneficiaire'] = true;
                     }
                 }
             }
-
-            if ($category->categorie->code == 'AM') {
-                foreach ($datas['AM'] as $key1 => $values) {
-                    foreach ($values as $key2 => $value) {
-                        if ($beneficiairePrimeExept->matricule == $value['matricule']) {
-                            $datas['AM'][$key1][$key2]['havePrimeExcept'] = true;
-                            break;
-                        }
-
-                    }
-                    if ($datas['AM'][$key1][$key2]['havePrimeExcept'] == true) {
-                        break;
-                    }
-                }
-            }
-
-            if ($category->categorie->code == 'AC') {
-                foreach ($datas['AC'] as $key1 => $values) {
-                    foreach ($values as $key2 => $value) {
-                        if ($beneficiairePrimeExept->matricule == $value['matricule']) {
-                            $datas['AC'][$key1][$key2]['havePrimeExcept'] = true;
-                            break;
-                        }
-
-                    }
-                    if ($datas['AC'][$key1][$key2]['havePrimeExcept'] == true) {
-                        break;
-                    }
-                }
-            }
-
-
         }
 
         DB::commit();
