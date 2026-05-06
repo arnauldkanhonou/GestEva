@@ -36,6 +36,16 @@
                     </div>
                     <div class="row mt-3">
                         <div class="col-md-6">
+                            <h5><b>Budget bonus exceptionnel</b></h5>
+                        </div>
+                        <div class="col-md-4">
+                            <input v-model="form.budgetBonusExceptionnelFormater"
+                                   @blur="numberFormat(form.budgetBonusExceptionnelFormater,'budgetExceptionnel')" type="text"
+                                   class="form-control">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
                             <h5><b>Taux applicable à la performance A</b></h5>
                         </div>
                         <div class="col-md-4">
@@ -71,7 +81,7 @@
 
                         <div class="row mt-3">
                             <div class="col-md-6">
-                                <h5><b>3% de la Somme des salaires de base</b></h5>
+                                <h5><b>Cagnotte de base (3% SB)</b></h5>
                             </div>
                             <div class="col-md-4">
                                 <p><b>{{ formatMonetaire(form.troisPercentSB, 'XOF') }}</b></p>
@@ -79,7 +89,7 @@
                         </div>
                         <div class="row mt-3">
                             <div class="col-md-6">
-                                <h5><b>Cagnotte de base</b></h5>
+                                <h5><b>Cagnotte (3% de la somme des salaires de base) x 24</b></h5>
                             </div>
                             <div class="col-md-4">
                                 <p><b>{{ formatMonetaire(form.cagnotteBase, 'XOF') }}</b></p>
@@ -185,7 +195,7 @@
                                 </td>
                                 <td align="right"><b style="font-size: 17px;background-color: green;padding: 3px"
                                                      class="text-black">{{
-                                        formatMonetaire(form.budgetBonus - form.sommeBonusBenificiaire - primeExcept, 'XOF')
+                                        formatMonetaire(form.budgetAPartager - form.sommeBonusBenificiaire, 'XOF')
                                     }}</b></td>
                             </tr>
                             </tbody>
@@ -269,7 +279,7 @@
                                 </td>
                                 <td align="right"><b style="font-size: 17px;background-color: green;padding: 3px"
                                                      class="text-black">{{
-                                        formatMonetaire(form.budgetBonus - form.sommeBonusBenificiaire - primeExcept, 'XOF')
+                                        formatMonetaire(form.budgetAPartager - form.sommeBonusBenificiaire, 'XOF')
                                     }}</b></td>
                             </tr>
                             </tbody>
@@ -394,6 +404,9 @@ export default {
             tauxResultat: '',
             budgetBonus: '',
             budgetBonusFormater: '',
+            budgetBonusExceptionnel: 0,
+            budgetBonusExceptionnelFormater: '',
+            budgetAPartager: 0,
             sommeSalaireBase: '',
             sommeSalaireBaseFormater: '',
             troisPercentSB: '',
@@ -415,6 +428,7 @@ export default {
                         form.sommeBonusBenificiaire = response.data.dataCagnotte.sommeBonus;
                         primeExcept.value = response.data.dataCagnotte.sommePrime;
                         form.budgetBonus = response.data.dataCagnotte.budget;
+                        form.budgetAPartager = response.data.dataCagnotte.budget;
                         dataCagnotte.value = response.data.dataCagnotte;
                     }
                 }).catch((error) => {
@@ -463,6 +477,7 @@ export default {
                 taux: form.tauxResultat,
                 salaireBase: form.sommeSalaireBase,
                 BudgetBonus: form.budgetBonus,
+                BudgetBonusExceptionnel: form.budgetBonusExceptionnel,
                 tauxPerformanceA: form.tauxPerformanceA,
                 tauxPerformanceB: form.tauxPerformanceB,
             }
@@ -474,6 +489,7 @@ export default {
                     form.totalSCMperformanceA = response.data.totalSMCPerfA;
                     form.totalSMCperformanceB = response.data.totalSMCPerfB;
                     form.tauxPerformanceB = response.data.tauxPerformanceB;
+                    form.budgetAPartager = response.data.budgetAPartager;
                     form.sommeBonusBenificiaire = response.data.sommeBonusBeneficiaire;
                     primeExcept.value = response.data.sommePrimeExcept;
                     beneficiaires.value = response.data.beneficiaires;
@@ -543,9 +559,12 @@ export default {
             if (depart === 'sommeSalaire') {
                 form.sommeSalaireBase = nbre;
                 form.sommeSalaireBaseFormater = n;
-            } else {
+            } else if (depart === 'budget') {
                 form.budgetBonus = nbre;
                 form.budgetBonusFormater = n;
+            } else {
+                form.budgetBonusExceptionnel = nbre;
+                form.budgetBonusExceptionnelFormater = n;
             }
 
             return n
