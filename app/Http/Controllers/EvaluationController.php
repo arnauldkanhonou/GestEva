@@ -1485,17 +1485,25 @@ class EvaluationController extends Controller
     public function getEvaluationCollaborateur($idCollaborateur)
     {
         $typeEva = TypeEvaluation::where('code','EA')->first();
-        $req = "select eval.id,eval.accomplissement,eval.difficulteMission,eval.progres,eval.dateEvaluation,eval.clotureCodi,eval.clotureResp,
-                annees.libelle as annee,typeEv.code as typeEva
-                from evaluations eval
-                inner join annees on annees.id = eval.annee_id
-                inner join type_evaluations typeEv on typeEv.id = eval.type_evaluation_id
-                where eval.employe_id = $idCollaborateur
-                and eval.transmis =1
-                and eval.type_evaluation_id =$typeEva->id
-                order by eval.id desc";
+        $evaluations = DB::table('evaluations')
+            ->join('annees','annees.id','=','evaluations.annee_id')
+            ->join('type_evaluations','type_evaluations.id','=','evaluations.type_evaluation_id')
+            ->leftJoin('laureat_evaluations','laureat_evaluations.idEval','=','evaluations.id')
+            ->select('evaluations.id','evaluations.accomplissement','evaluations.difficulteMission','evaluations.progres','evaluations.dateEvaluation','evaluations.clotureCodi','evaluations.clotureResp','annees.libelle as annee',"type_evaluations.code as typeEva",
+                'evaluations.performanceRealiser as note',
+                'evaluations.performanceFinal as notePonderee',
+                DB::raw('case when laureat_evaluations.id is null then null else coalesce(laureat_evaluations.montantPrime, laureat_evaluations.montantBonus) end as bonusPE'))
+            ->where('evaluations.employe_id', $idCollaborateur)
+            ->where('evaluations.transmis', true)
+            ->where('evaluations.type_evaluation_id', $typeEva->id)
+            ->where(function($query){
+                $query->whereNull('laureat_evaluations.id')
+                    ->orWhere('laureat_evaluations.valider', true);
+            })
+            ->orderByDesc('evaluations.id')
+            ->get();
 
-        return GlobalResource::make(DB::select($req));
+        return GlobalResource::make($evaluations);
 //      return GlobalResource::collection(Evaluation::with('annee')->where('employe_id', $idCollaborateur)->where('transmis', true)->orderBy('created_at', 'DESC')->get());
     }
 
